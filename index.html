@@ -80,6 +80,7 @@ header{position:relative}
 .gr{white-space:nowrap;color:var(--ink)}.gr small{color:var(--mute);font-size:12px}
 .foto{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;background:var(--chip);filter:sepia(.12) saturate(.9)}
 .logo-t{height:18px;width:auto;max-width:48px;object-fit:contain;vertical-align:-4px;margin-right:6px;border-radius:4px}
+.chips:not(.all) .extra{display:none}
 </style>
 </head>
 <body>
@@ -99,16 +100,17 @@ header{position:relative}
 <aside><div class="panel">
 <div class="f"><label for="q">Buscar</label><input id="q" type="search" placeholder="Café, tostador, ciudad…"></div>
 <div class="f"><label for="tipo">Para preparar en</label>
-<select id="tipo"><option value="">Cualquier método</option><option>Espresso</option><option>Filtro</option><option>Ambos</option></select></div>
+<select id="tipo"><option value="">Cualquier método</option><option value="Espresso">Espresso</option><option value="Filtro">Filtro (V60, Chemex, goteo…)</option><option value="Moka">Moka / italiana</option><option value="Prensa francesa">Prensa francesa</option><option value="AeroPress">AeroPress</option><option value="Cold brew">Cold brew</option><option value="Superautomática">Superautomática</option></select></div>
 <div class="f"><label for="origen">Origen</label><select id="origen"><option value="">Todos los orígenes</option></select></div>
+<div class="f"><label for="ciudad">Ciudad</label><select id="ciudad"><option value="">Todas las ciudades</option></select></div>
 <div class="f"><b>Notas de cata</b><div class="chips" id="notas"></div></div>
 <div class="f"><label for="val">Valoración mínima: <span id="valv">0</span></label><input id="val" type="range" min="0" max="5" step="0.1" value="0"></div>
+<div class="f" id="scaf"><label for="scav">SCA mínima: <span id="scavv">cualquiera</span></label><input id="scav" type="range" min="80" max="92" step="0.5" value="80"></div>
 <div class="f"><label for="min">Pedido mínimo hasta: <span id="minv">sin límite</span></label><input id="min" type="range" min="0" max="60" step="5" value="60"></div>
 <div class="f">
 <div class="chk"><input type="checkbox" id="stock"><label for="stock">Solo disponibles</label></div>
-<div class="chk"><input type="checkbox" id="free"><label for="free">Con envío gratis</label></div>
 <div class="chk"><input type="checkbox" id="dom"><label for="dom">Envío a domicilio</label></div>
-<div class="chk"><input type="checkbox" id="sca"><label for="sca">Con puntuación SCA</label></div>
+
 </div>
 <button class="reset" id="reset">Limpiar filtros</button>
 </div></aside>
@@ -134,23 +136,25 @@ let D=[];
 let iaIds=null,show=24;
 const FL={"Etiopía":"🇪🇹","Kenia":"🇰🇪","Colombia":"🇨🇴","Brasil":"🇧🇷","Guatemala":"🇬🇹","Costa Rica":"🇨🇷","Perú":"🇵🇪","Honduras":"🇭🇳","Burundi":"🇧🇮","Ruanda":"🇷🇼","Panamá":"🇵🇦","El Salvador":"🇸🇻","Nicaragua":"🇳🇮","México":"🇲🇽","Indonesia":"🇮🇩","Tanzania":"🇹🇿","Uganda":"🇺🇬","Venezuela":"🇻🇪","Bolivia":"🇧🇴","Ecuador":"🇪🇨","Yemen":"🇾🇪","India":"🇮🇳"};
 const flag=o=>FL[o]?`<span class="flag" aria-hidden="true">${FL[o]}</span>`:"";
-const NOTAS=["Frutos rojos","Cítrico","Floral","Chocolate","Caramelo","Miel","Frutos secos","Té"];
+const NOTAS=["Frutos rojos","Cítrico","Fruta tropical","Fruta de hueso","Floral","Té","Chocolate","Cacao","Caramelo","Miel","Manzana y pera","Uva y vino","Panela","Frutos secos","Vainilla","Especias","Herbal","Madera y tabaco","Mermelada","Cereal y pan"];
 const $=id=>document.getElementById(id);
 const sel=new Set();
 const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-function poblarOrigenes(){[...new Set(D.map(d=>d.o))].sort().forEach(o=>$("origen").add(new Option((FL[o]?FL[o]+" ":"")+o,o)))}
-NOTAS.forEach(n=>{const b=document.createElement("button");b.className="chip";b.textContent=n;b.setAttribute("aria-pressed","false");
+function poblarOrigenes(){[...new Set(D.map(d=>d.c).filter(Boolean))].sort().forEach(c=>$("ciudad").add(new Option(c,c)));[...new Set(D.map(d=>d.o))].sort().forEach(o=>$("origen").add(new Option((FL[o]?FL[o]+" ":"")+o,o)))}
+NOTAS.forEach((n,ix)=>{const b=document.createElement("button");b.className="chip"+(ix>=10?" extra":"");b.textContent=n;b.setAttribute("aria-pressed","false");
 b.onclick=()=>{sel.has(n)?sel.delete(n):sel.add(n);b.setAttribute("aria-pressed",sel.has(n));show=24;render()};$("notas").appendChild(b)});
+const tg=document.createElement("button");tg.className="reset";tg.textContent="Ver todas las notas";tg.onclick=()=>{const o=$("notas").classList.toggle("all");tg.textContent=o?"Ver menos":"Ver todas las notas"};$("notas").after(tg);
+
 
 function link(d){try{const u=new URL(d.u);u.searchParams.set(AFF.param,AFF.id);u.searchParams.set("utm_source","granos");return u.href}catch(e){return d.u}}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 
 function render(){
 const q=norm($("q").value),t=$("tipo").value,o=$("origen").value,v=+$("val").value,m=+$("min").value;
-$("valv").textContent=v.toFixed(1);$("minv").textContent=m>=60?"sin límite":m+" €";
+$("valv").textContent=v.toFixed(1);const sc=+$("scav").value;$("scavv").textContent=sc<=80?"cualquiera":sc;$("minv").textContent=m>=60?"sin límite":m+" €";
 let r=D.filter(d=>(!q||norm([d.n,d.r,d.c,d.o,...(d.nt||[])].join(" ")).includes(q))
-&&(!t||d.t===t||d.t==="Ambos")&&(!o||d.o===o)&&d.rt>=v&&(m>=60||d.mn<=m)
-&&(!$("stock").checked||d.s)&&(!$("sca").checked||d.sca)&&(!$("free").checked||d.sh!=null)&&(!$("dom").checked||d.dom)
+&&(!t||(d.mt?(!d.mt.length||d.mt.includes(t)):(d.t===t||d.t==="Ambos")))&&(!o||d.o===o)&&(!$("ciudad").value||d.c===$("ciudad").value)&&d.rt>=v&&(sc<=80||d.sca>=sc)&&(m>=60||d.mn<=m)
+&&(!$("stock").checked||d.s)&&(!$("dom").checked||d.dom)
 &&(!iaIds||iaIds.includes(d.i))&&[...sel].every(n=>(d.nt||[]).includes(n)));
 const k=$("orden").value;
 r.sort((a,b)=>iaIds?iaIds.indexOf(a.i)-iaIds.indexOf(b.i):k==="pa"?a.pr-b.pr:k==="pd"?b.pr-a.pr:(b.rt||0)-(a.rt||0));
@@ -159,7 +163,7 @@ const tot=r.length;r=r.slice(0,show);$("more").style.display=tot>show?"block":"n
 ${d.img?`<img class="foto" src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" width="400" height="300" onerror="this.remove()">`:""}
 <div><h2>${esc(d.n)}</h2><p class="who">${d.logo?`<img class="logo-t" src="${esc(d.logo)}" alt="" loading="lazy" onerror="this.remove()">`:""}${esc(d.r)}, ${esc(d.c)}${d.g?` · <span class="gr" title="Valoración en Google Maps">★ ${d.g.toFixed(1).replace(".",",")} en Google${d.gn?` <small>(${d.gn})</small>`:""}</span>`:""}</p></div>
 <p class="notes">${(d.nt||[]).map(esc).join(", ")}</p>
-<div class="meta">${d.o?`<span class="tag">${flag(d.o)}${esc(d.o)}</span>`:""}${d.p?`<span class="tag">${esc(d.p)}</span>`:""}<span class="tag">${esc(d.t)}</span>${d.sca?`<span class="tag sca" title="Puntuación SCA">SCA ${d.sca}</span>`:""}</div>
+<div class="meta">${d.o?`<span class="tag">${flag(d.o)}${esc(d.o)}</span>`:""}${d.p?`<span class="tag">${esc(d.p)}</span>`:""}${(d.mt||(d.t?[d.t]:[])).slice(0,3).map(x=>`<span class="tag">${esc(x)}</span>`).join("")}${d.sca?`<span class="tag sca" title="Puntuación SCA">SCA ${d.sca}</span>`:""}</div>
 ${d.rt!=null?`<div class="rt">★ ${d.rt.toFixed(1)} <span>valoración</span></div>`:""}
 <p class="ship ${d.sh!=null?"ok":""}">${d.sh!=null?"Envío gratis desde "+d.sh+" €":"Envío con coste"}${d.mn?" · Pedido mínimo "+d.mn+" €":""}${d.s?"":" · Agotado ahora"}</p>
 <div class="foot"><div class="price">${(+d.pr||0).toFixed(2).replace(".",",")} €<small> / 250 g</small></div>
@@ -167,13 +171,14 @@ ${d.rt!=null?`<div class="rt">★ ${d.rt.toFixed(1)} <span>valoración</span></d
 :`<div class="empty" style="grid-column:1/-1">Ni un solo grano con esos filtros. Quita alguno, que no somos tan exigentes. <button class="reset" onclick="resetAll()">Limpiar filtros</button></div>`}
 
 function resetAll(){$("q").value="";$("tipo").value="";$("origen").value="";$("val").value=0;$("min").value=60;
-["stock","free","dom","sca"].forEach(i=>$(i).checked=false);sel.clear();
+$("scav").value=80;$("ciudad").value="";["stock","dom"].forEach(i=>$(i).checked=false);sel.clear();
 document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));render()}
 $("reset").onclick=resetAll;
-["q","tipo","origen","val","min","stock","free","dom","sca","orden"].forEach(i=>$(i).addEventListener("input",()=>{show=24;render()}));
+["q","tipo","origen","val","min","stock","dom","scav","ciudad","orden"].forEach(i=>$(i).addEventListener("input",()=>{show=24;render()}));
 $("more").onclick=()=>{show+=24;render()};
 fetch("cafes.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()})
  .then(j=>{D=j.filter(d=>+d.pr>0).map((d,i)=>(d.i=i,d));poblarOrigenes();
+  if(!D.some(d=>d.sca))$("scaf").style.display="none";
   if(!D.some(d=>d.rt!=null)){$("orden").querySelector('[value=rt]').remove();$("orden").value="pa";$("val").closest(".f").style.display="none"}
   render()},()=>{$("count").textContent="";$("grid").innerHTML='<div class="empty" style="grid-column:1/-1">Aún no hay cafés cargados.</div>'});
 fetch("estado.json",{cache:"no-cache"}).then(r=>r.json()).then(e=>{$("upd").textContent="Datos actualizados el "+new Date(e.fecha).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})+". "}).catch(()=>{});
