@@ -3,149 +3,206 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Granos · Comparador de Café de Especialidad en España</title>
+<title>Granos · Café de especialidad en España</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #EDE3D3; --card: #F7F0E4; --ink: #2A1A12; --mute: #7B6657;
-  --line: #D8C8B1; --acc: #6B3A22; --accT: #F7F0E4; --chip: #E3D3BB; --ok: #4F6B3A;
-  box-sizing: border-box;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1C130E; --card: #271B14; --ink: #F0E4D2; --mute: #A38E7B;
-    --line: #3D2C21; --acc: #D2A06A; --accT: #1C130E; --chip: #35261C; --ok: #9DBB82;
-  }
-}
-*, *:before, *:after { box-sizing: inherit; }
-body { margin:0; background-color: var(--bg); color: var(--ink); font: 400 16px/1.5 "DM Sans", sans-serif; }
-.wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-header { padding: 40px 0 24px; }
-.logo { font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em; font-size: 13px; }
-h1 { font: 400 clamp(42px, 8vw, 76px)/0.98 'Instrument Serif', Georgia, serif; margin: 12px 0; }
-h1 em { font-style: italic; color: var(--acc); }
-.lead { color: var(--mute); max-width: 55ch; margin: 0 0 24px; }
-.layout { display: grid; grid-template-columns: 260px 1fr; gap: 32px; padding-bottom: 64px; }
-aside { align-self: start; position: sticky; top: 16px; }
-.panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
-.f { margin-bottom: 18px; } .f:last-child { margin-bottom: 0; }
-.f > label, .f > b { display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
-input[type=search], select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 5px 11px; border-radius: 99px; font-size: 13px; cursor: pointer; }
-.chip[aria-pressed=true] { background: var(--acc); color: var(--accT); border-color: var(--acc); }
-.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 6px; }
-.bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.cafe { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-.cafe h2 { font: 400 26px/1.05 'Instrument Serif', Georgia, serif; margin: 0; }
-.who { color: var(--mute); font-size: 14px; margin: 0; }
-.meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
-.tag { background: var(--chip); padding: 3px 9px; border-radius: 99px; }
-.tag.sca { border: 1px solid var(--acc); color: var(--acc); font-weight: 700; background: transparent; }
-.notes { font: italic 400 18px 'Instrument Serif', Georgia, serif; color: var(--acc); margin: 0; }
-.foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--line); }
-.price { font: 400 24px 'Instrument Serif', Georgia, serif; }
-.buy { background: var(--acc); color: var(--accT); text-decoration: none; padding: 8px 16px; border-radius: 99px; font-weight: 700; font-size: 14px; }
-footer { border-top: 1px dashed var(--line); padding: 24px 0 40px; color: var(--mute); font-size: 13px; margin-top: 40px; }
-@media(max-width: 820px) { .layout { grid-template-columns: 1fr; } aside { position: static; } }
+:root{--bg:#EDE3D3;--card:#F7F0E4;--ink:#2A1A12;--mute:#7B6657;--line:#D8C8B1;--acc:#6B3A22;--accT:#F7F0E4;--chip:#E3D3BB;--ok:#4F6B3A;--w:rgba(80,50,20,.05);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1C130E;--card:#271B14;--ink:#F0E4D2;--mute:#A38E7B;--line:#3D2C21;--acc:#D2A06A;--accT:#1C130E;--chip:#35261C;--ok:#9DBB82;--w:rgba(240,220,190,.04)}}
+:root[data-theme="dark"]{--bg:#1C130E;--card:#271B14;--ink:#F0E4D2;--mute:#A38E7B;--line:#3D2C21;--acc:#D2A06A;--accT:#1C130E;--chip:#35261C;--ok:#9DBB82;--w:rgba(240,220,190,.04)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background-color:var(--bg);background-image:repeating-linear-gradient(0deg,var(--w) 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,var(--w) 0 1px,transparent 1px 4px),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3 0 0 0 0 .2 0 0 0 0 .1 0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");color:var(--ink);font:400 16px/1.5 "DM Sans",system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header{padding:48px 0 28px}
+.logo{font:500 15px "DM Sans";letter-spacing:.02em;color:var(--mute)}
+h1{font:400 clamp(50px,9vw,88px)/.97 'Instrument Serif',Georgia,serif;margin:14px 0 12px;letter-spacing:-.02em;max-width:14ch}
+h1 em{font-style:italic;font-weight:400;color:var(--acc)}
+.lead{color:var(--mute);max-width:52ch;margin:0}
+.layout{display:grid;grid-template-columns:260px 1fr;gap:32px;padding-bottom:64px}
+@media(max-width:820px){.layout{grid-template-columns:1fr}}
+aside{align-self:start;position:sticky;top:16px}
+@media(max-width:820px){aside{position:static}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.f{margin-bottom:18px}.f:last-child{margin-bottom:0}
+.f>label,.f>b{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
+input[type=search],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:transparent;color:var(--ink);padding:5px 11px;border-radius:99px;font:inherit;font-size:13px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--acc);color:var(--accT);border-color:var(--acc)}
+.chip:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;margin-bottom:6px}
+.chk input{accent-color:var(--acc);width:17px;height:17px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.bar select{width:auto}
+.count{color:var(--mute);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.cafe{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.cafe h2{font:400 28px/1.05 'Instrument Serif',Georgia,serif;margin:0}
+.who{color:var(--mute);font-size:14px;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:13px}
+.tag{background:var(--chip);padding:3px 10px;border-radius:99px}
+.notes{font:italic 400 19px 'Instrument Serif',Georgia,serif;color:var(--acc);margin:0}
+.rt{font-weight:700}.rt span{color:var(--mute);font-weight:400}
+.ship{font-size:13px;color:var(--mute);margin:0}
+.ship.ok{color:var(--ok)}
+.foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--line)}
+.price{font:400 26px 'Instrument Serif',Georgia,serif}.price small{font:400 12px "DM Sans";color:var(--mute)}
+.buy{background:var(--acc);color:var(--accT);text-decoration:none;padding:9px 16px;border-radius:99px;font-weight:700;font-size:14px}
+.off{opacity:.6}.off .buy{background:var(--line);color:var(--mute);pointer-events:none}
+.empty{padding:40px;text-align:center;color:var(--mute);border:1px dashed var(--line);border-radius:18px}
+.reset{background:none;border:0;color:var(--acc);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:0}
+footer{border-top:2px dashed var(--line);padding:24px 0 40px;color:var(--mute);font-size:13px}
+.ia{display:none;background:var(--card);border:2px dashed var(--line);border-radius:18px;padding:16px;margin:0 0 28px}
+.ia.on{display:block}
+.ia b{font:400 26px 'Instrument Serif',Georgia,serif}
+.ia p{margin:4px 0 12px;color:var(--mute);font-size:14px}
+.iarow{display:flex;gap:8px;flex-wrap:wrap}
+.iarow input{flex:1;min-width:220px;padding:11px 14px;border:1px solid var(--line);border-radius:99px;background:var(--bg);color:var(--ink);font:inherit}
+.iarow button{background:var(--acc);color:var(--accT);border:0;border-radius:99px;padding:11px 20px;font:700 14px "DM Sans";cursor:pointer}
+.iarow button:disabled{opacity:.5}
+.ex{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+#iares{margin-top:12px;font-size:14px;color:var(--ink)}
+.logo{display:flex;align-items:center;gap:8px}
+.logo svg{color:var(--acc)}
+header{position:relative}
+.sello{position:absolute;right:4px;top:44px;width:112px;height:112px;color:var(--acc);opacity:.85;transform:rotate(-9deg)}
+.steam{position:absolute;right:44px;top:-2px;width:40px;height:46px;fill:none;stroke:var(--acc);stroke-width:3;stroke-linecap:round;opacity:.9}
+.steam path{animation:rise 4.5s ease-in-out infinite;opacity:0}
+.steam path:nth-child(2){animation-delay:1.4s}.steam path:nth-child(3){animation-delay:2.8s}
+@keyframes rise{0%{transform:translateY(10px);opacity:0}40%{opacity:.55}100%{transform:translateY(-12px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.steam path{animation:none;opacity:.35}}
+@media(max-width:600px){.steam{display:none}.sello{width:64px;height:64px;top:14px}}
+.tag.sca{background:transparent;border:1px solid var(--acc);color:var(--acc);font-weight:700}
+.flag{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:6px;border-radius:50%;overflow:hidden;vertical-align:-4px;font:13px/1 "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);filter:saturate(.8) sepia(.18) contrast(.95)}
+.gr{white-space:nowrap;color:var(--ink)}.gr small{color:var(--mute);font-size:12px}
+.foto{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;background:var(--chip);filter:sepia(.12) saturate(.9)}
+.logo-t{height:18px;width:auto;max-width:48px;object-fit:contain;vertical-align:-4px;margin-right:6px;border-radius:4px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <div class="logo">Granos · Café de Especialidad</div>
-  <h1>Encuentra tu café ideal, <em>sin dar rodeos</em></h1>
-  <p class="lead">Compara en tiempo real los mejores tostadores artesanales de España por notas de cata, origen, proceso y puntuación SCA.</p>
+<div class="logo">Granos · café del bueno, sin postureo</div><svg class="steam" viewBox="0 0 70 80" aria-hidden="true"><path d="M15 70c-8-12 8-18 0-30s8-18 0-30"/><path d="M35 72c-8-12 8-18 0-30s8-18 0-30"/><path d="M55 70c-8-12 8-18 0-30s8-18 0-30"/></svg><svg class="sello" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="arc" d="M60 60m-39 0a39 39 0 1 1 78 0a39 39 0 1 1-78 0"/><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5"/></filter></defs><g filter="url(#rough)" fill="currentColor" stroke="currentColor"><circle cx="60" cy="60" r="56" fill="none" stroke-width="3"/><circle cx="60" cy="60" r="49" fill="none" stroke-width="1"/><text font-size="9.5" font-weight="700" letter-spacing="1.5" stroke="none"><textPath href="#arc" textLength="236">CAFÉ DEL BUENO · SIN POSTUREO · </textPath></text><path stroke="none" transform="translate(60 64) scale(.6) translate(-60 -65)" d="M30 70c-6-9 2-15 12-11 6 2 10 6 18 6s12-4 18-6c10-4 18 2 12 11-4-4-10-5-16-2-6 3-10 4-14 4s-8-1-14-4c-6-3-12-2-16 2z"/></g></svg>
+<h1>Tu próximo café, <em>sin perder horas</em> buscando</h1>
+<p class="lead">Cafés de especialidad de tostadores españoles en un solo sitio. Filtra por origen, notas de cata, envío y precio, y compra directo al tostador. Sin pasar la tarde con quince pestañas abiertas.</p>
 </header>
 
+<section class="ia" id="ia"><b>Cuéntale al barista qué buscas</b>
+<p>Escribe como se lo dirías a un barista y la IA elige por ti.</p>
+<div class="iarow"><input id="iaq" placeholder="Algo afrutado para V60, menos de 14 €, que no esté agotado"><button id="iabtn">Buscar</button></div>
+<div class="ex"><button class="chip" data-q="Un café suave y achocolatado para cafetera italiana">Suave y achocolatado</button><button class="chip" data-q="Algo muy floral y ácido para filtro">Floral y ácido</button><button class="chip" data-q="El mejor espresso barato para todos los días">Espresso barato</button></div>
+<div id="iares" aria-live="polite"></div></section>
 <div class="layout">
 <aside><div class="panel">
-  <div class="f"><label for="q">Buscar</label><input id="q" type="search" placeholder="Café, tostador, origen…"></div>
-  <div class="f"><label for="tipo">Método</label>
-    <select id="tipo"><option value="">Cualquier método</option><option>Espresso</option><option>Filtro</option></select>
-  </div>
-  <div class="f"><label for="origen">Origen</label><select id="origen"><option value="">Todos los orígenes</option></select></div>
-  <div class="f"><b>Notas de cata</b><div class="chips" id="notas"></div></div>
-  <div class="f">
-    <div class="chk"><input type="checkbox" id="stock"><label for="stock">Solo en stock</label></div>
-    <div class="chk"><input type="checkbox" id="sca"><label for="sca">Con puntuación SCA</label></div>
-  </div>
+<div class="f"><label for="q">Buscar</label><input id="q" type="search" placeholder="Café, tostador, ciudad…"></div>
+<div class="f"><label for="tipo">Para preparar en</label>
+<select id="tipo"><option value="">Cualquier método</option><option>Espresso</option><option>Filtro</option><option>Ambos</option></select></div>
+<div class="f"><label for="origen">Origen</label><select id="origen"><option value="">Todos los orígenes</option></select></div>
+<div class="f"><b>Notas de cata</b><div class="chips" id="notas"></div></div>
+<div class="f"><label for="val">Valoración mínima: <span id="valv">0</span></label><input id="val" type="range" min="0" max="5" step="0.1" value="0"></div>
+<div class="f"><label for="min">Pedido mínimo hasta: <span id="minv">sin límite</span></label><input id="min" type="range" min="0" max="60" step="5" value="60"></div>
+<div class="f">
+<div class="chk"><input type="checkbox" id="stock"><label for="stock">Solo disponibles</label></div>
+<div class="chk"><input type="checkbox" id="free"><label for="free">Con envío gratis</label></div>
+<div class="chk"><input type="checkbox" id="dom"><label for="dom">Envío a domicilio</label></div>
+<div class="chk"><input type="checkbox" id="sca"><label for="sca">Con puntuación SCA</label></div>
+</div>
+<button class="reset" id="reset">Limpiar filtros</button>
 </div></aside>
 
 <main>
-  <div class="bar">
-    <span id="count" style="color:var(--mute); font-size:14px"></span>
-    <select id="orden" style="width:auto">
-      <option value="pa">Precio: menor a mayor</option>
-      <option value="pd">Precio: mayor a menor</option>
-    </select>
-  </div>
-  <div class="grid" id="grid"></div>
+<div class="bar"><span class="count" id="count"></span>
+<select id="orden" aria-label="Ordenar"><option value="rt">Mejor valorados</option><option value="pa">Precio: menor a mayor</option><option value="pd">Precio: mayor a menor</option></select></div>
+<div class="grid" id="grid"></div>
+<div style="text-align:center;margin-top:22px"><button id="more" class="chip" style="display:none;padding:11px 24px;font-size:15px">Mostrar más cafés</button></div>
 </main>
 </div>
 
-<footer>
-  <span id="upd"></span>Algunos enlaces son de afiliado: si compras a través de ellos recibimos una pequeña comisión que financia el proyecto sin coste adicional para ti.
-</footer>
+<footer><span id="upd"></span>Hecho con cafeína y mal pulso. Algunos enlaces son de afiliación: si compras a través de ellos, Granos recibe una pequeña comisión sin coste extra para ti. Precios, valoraciones y condiciones de envío son orientativos y deben verificarse en cada tienda.</footer>
 </div>
 
 <script>
-let D = []; const sel = new Set();
-const NOTAS = ["Frutos rojos","Cítrico","Floral","Chocolate","Caramelo","Miel","Frutos secos","Té"];
-const $ = id => document.getElementById(id);
+// ===== CONFIGURACIÓN =====
+// Sustituye por tu ID de afiliado / parámetros de seguimiento de cada tostador.
+const AFF = {param:"ref", id:"granos"};
+// Datos de ejemplo. n=nombre, r=tostador, c=ciudad, u=web, t=método, o=origen, pr=precio 250 g,
+// rt=valoración, sh=envío gratis desde (€, null si no hay), mn=pedido mínimo (€), s=disponible, dom=envío a domicilio
+let D=[];
+let iaIds=null,show=24;
+const FL={"Etiopía":"🇪🇹","Kenia":"🇰🇪","Colombia":"🇨🇴","Brasil":"🇧🇷","Guatemala":"🇬🇹","Costa Rica":"🇨🇷","Perú":"🇵🇪","Honduras":"🇭🇳","Burundi":"🇧🇮","Ruanda":"🇷🇼","Panamá":"🇵🇦","El Salvador":"🇸🇻","Nicaragua":"🇳🇮","México":"🇲🇽","Indonesia":"🇮🇩","Tanzania":"🇹🇿","Uganda":"🇺🇬","Venezuela":"🇻🇪","Bolivia":"🇧🇴","Ecuador":"🇪🇨","Yemen":"🇾🇪","India":"🇮🇳"};
+const flag=o=>FL[o]?`<span class="flag" aria-hidden="true">${FL[o]}</span>`:"";
+const NOTAS=["Frutos rojos","Cítrico","Floral","Chocolate","Caramelo","Miel","Frutos secos","Té"];
+const $=id=>document.getElementById(id);
+const sel=new Set();
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function poblarOrigenes(){[...new Set(D.map(d=>d.o))].sort().forEach(o=>$("origen").add(new Option((FL[o]?FL[o]+" ":"")+o,o)))}
+NOTAS.forEach(n=>{const b=document.createElement("button");b.className="chip";b.textContent=n;b.setAttribute("aria-pressed","false");
+b.onclick=()=>{sel.has(n)?sel.delete(n):sel.add(n);b.setAttribute("aria-pressed",sel.has(n));show=24;render()};$("notas").appendChild(b)});
 
-NOTAS.forEach(n => {
-  const b = document.createElement("button"); b.className = "chip"; b.textContent = n;
-  b.onclick = () => { sel.has(n) ? sel.delete(n) : sel.add(n); b.setAttribute("aria-pressed", sel.has(n)); render(); };
-  $("notas").appendChild(b);
-});
+function link(d){try{const u=new URL(d.u);u.searchParams.set(AFF.param,AFF.id);u.searchParams.set("utm_source","granos");return u.href}catch(e){return d.u}}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 
-function render() {
-  const q = $("q").value.toLowerCase(), t = $("tipo").value, o = $("origen").value;
-  let r = D.filter(d => 
-    (!q || (d.n + " " + d.r + " " + d.o).toLowerCase().includes(q)) &&
-    (!t || d.t === t || d.t === "Ambos") &&
-    (!o || d.o === o) &&
-    (!$("stock").checked || d.s) &&
-    (!$("sca").checked || d.sca) &&
-    [...sel].every(n => (d.nt || []).includes(n))
-  );
-  
-  if ($("orden").value === "pa") r.sort((a,b) => a.pr - b.pr);
-  if ($("orden").value === "pd") r.sort((a,b) => b.pr - a.pr);
+function render(){
+const q=norm($("q").value),t=$("tipo").value,o=$("origen").value,v=+$("val").value,m=+$("min").value;
+$("valv").textContent=v.toFixed(1);$("minv").textContent=m>=60?"sin límite":m+" €";
+let r=D.filter(d=>(!q||norm([d.n,d.r,d.c,d.o,...d.nt].join(" ")).includes(q))
+&&(!t||d.t===t||d.t==="Ambos")&&(!o||d.o===o)&&d.rt>=v&&(m>=60||d.mn<=m)
+&&(!$("stock").checked||d.s)&&(!$("sca").checked||d.sca)&&(!$("free").checked||d.sh!==null)&&(!$("dom").checked||d.dom)
+&&(!iaIds||iaIds.includes(d.i))&&[...sel].every(n=>d.nt.includes(n)));
+const k=$("orden").value;
+r.sort((a,b)=>iaIds?iaIds.indexOf(a.i)-iaIds.indexOf(b.i):k==="pa"?a.pr-b.pr:k==="pd"?b.pr-a.pr:b.rt-a.rt);
+$("count").textContent=r.length+(r.length===1?" café encontrado":" cafés encontrados");
+const tot=r.length;r=r.slice(0,show);$("more").style.display=tot>show?"block":"none";$("grid").innerHTML=r.length?r.map(d=>`<article class="cafe ${d.s?"":"off"}">
+${d.img?`<img class="foto" src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" width="400" height="300" onerror="this.remove()">`:""}
+<div><h2>${esc(d.n)}</h2><p class="who">${d.logo?`<img class="logo-t" src="${esc(d.logo)}" alt="" loading="lazy" onerror="this.remove()">`:""}${esc(d.r)}, ${esc(d.c)}${d.g?` · <span class="gr" title="Valoración en Google Maps">★ ${d.g.toFixed(1).replace(".",",")} en Google${d.gn?` <small>(${d.gn})</small>`:""}</span>`:""}</p></div>
+<p class="notes">${d.nt.map(esc).join(", ")}</p>
+<div class="meta">${d.o?`<span class="tag">${flag(d.o)}${esc(d.o)}</span>`:""}${d.p?`<span class="tag">${esc(d.p)}</span>`:""}<span class="tag">${esc(d.t)}</span>${d.sca?`<span class="tag sca" title="Puntuación SCA">SCA ${d.sca}</span>`:""}</div>
+<div class="rt">★ ${d.rt.toFixed(1)} <span>valoración</span></div>
+<p class="ship ${d.sh!==null?"ok":""}">${d.sh!==null?"Envío gratis desde "+d.sh+" €":"Envío con coste"}${d.mn?" · Pedido mínimo "+d.mn+" €":""}${d.s?"":" · Agotado ahora"}</p>
+<div class="foot"><div class="price">${d.pr.toFixed(2).replace(".",",")} €<small> / 250 g</small></div>
+<a class="buy" href="${esc(d.aff_url||link(d))}" target="_blank" rel="sponsored noopener">${d.s?"Me lo llevo":"Agotado"}</a></div></article>`).join("")
+:`<div class="empty" style="grid-column:1/-1">Ni un solo grano con esos filtros. Quita alguno, que no somos tan exigentes. <button class="reset" onclick="resetAll()">Limpiar filtros</button></div>`}
 
-  $("count").textContent = `${r.length} cafés disponibles`;
-  $("grid").innerHTML = r.map(d => `
-    <article class="cafe">
-      <div>
-        <h2>${d.n}</h2>
-        <p class="who">${d.r}${d.c ? ' (' + d.c + ')' : ''}</p>
-      </div>
-      <p class="notes">${(d.nt || []).join(", ")}</p>
-      <div class="meta">
-        <span class="tag">${d.o}</span>
-        <span class="tag">${d.p}</span>
-        ${d.sca ? `<span class="tag sca">SCA ${d.sca}</span>` : ""}
-      </div>
-      <div class="foot">
-        <div class="price">${(d.pr || 0).toFixed(2)} €</div>
-        <a class="buy" href="${d.aff_url || d.u}" target="_blank" rel="sponsored noopener">Comprar</a>
-      </div>
-    </article>
-  `).join("");
-}
+function resetAll(){$("q").value="";$("tipo").value="";$("origen").value="";$("val").value=0;$("min").value=60;
+["stock","free","dom","sca"].forEach(i=>$(i).checked=false);sel.clear();
+document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));render()}
+$("reset").onclick=resetAll;
+["q","tipo","origen","val","min","stock","free","dom","sca","orden"].forEach(i=>$(i).addEventListener("input",()=>{show=24;render()}));
+$("more").onclick=()=>{show+=24;render()};
+fetch("cafes.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()})
+ .then(j=>{D=j.map((d,i)=>(d.i=i,d));poblarOrigenes();render()})
+ .catch(()=>{$("count").textContent="";$("grid").innerHTML='<div class="empty" style="grid-column:1/-1">Aún no hay cafés cargados.</div>'});
+fetch("estado.json",{cache:"no-cache"}).then(r=>r.json()).then(e=>{$("upd").textContent="Datos actualizados el "+new Date(e.fecha).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})+". "}).catch(()=>{});
 
-fetch("cafes.json").then(r => r.json()).then(j => {
-  D = j;
-  [...new Set(D.map(d => d.o))].sort().forEach(o => $("origen").add(new Option(o, o)));
+// ===== Búsqueda con IA (se activa solo si el visor la permite) =====
+(async()=>{
+let sample=null;try{sample=await claude.use("sample")}catch(e){}
+if(!sample)return;
+$("ia").classList.add("on");
+const cat=D.map(d=>({i:d.i,nombre:d.n,tostador:d.r,metodo:d.t,origen:d.o,proceso:d.p,notas:d.nt,precio250g:d.pr,valoracion:d.rt,disponible:!!d.s,envioGratisDesde:d.sh}));
+async function buscar(q){
+ const btn=$("iabtn"),out=$("iares");btn.disabled=true;out.textContent="Pensando…";
+ try{
+  const r=await sample.json(`Eres un barista experto en café de especialidad. Con este catálogo (JSON): ${JSON.stringify(cat)}
+Petición del usuario: "${q.replace(/"/g,"'")}"
+Elige entre 1 y 5 cafés del catálogo que mejor encajen, del más al menos adecuado, respetando presupuesto, método de preparación y disponibilidad si los menciona. Responde SOLO con JSON: {"ids":[números i],"motivo":"una o dos frases en español, cercanas, explicando la elección"}. Si nada encaja, ids vacío y explícalo.`,{modelTier:"quick"});
+  const ids=(r.ids||[]).filter(n=>D[n]);
+  iaIds=ids.length?ids:null;
+  out.innerHTML="";
+  const p=document.createElement("span");p.textContent=r.motivo||"";out.append(p," ");
+  const b=document.createElement("button");b.className="reset";b.textContent="Ver todos los cafés";
+  b.onclick=()=>{iaIds=null;out.textContent="";render()};out.append(b);
   render();
-});
-fetch("estado.json").then(r => r.json()).then(e => {
-  $("upd").textContent = "Última actualización: " + new Date(e.fecha).toLocaleDateString("es-ES") + ". ";
-});
-["q","tipo","origen","stock","sca","orden"].forEach(id => $(id).addEventListener("input", render));
+ }catch(e){out.textContent=e&&e.code==="not_granted"?"Necesitas permitir el uso de IA para esta función.":"No he podido hacer la búsqueda ahora. Prueba con los filtros."}
+ btn.disabled=false;
+}
+$("iabtn").onclick=()=>{const q=$("iaq").value.trim();if(q)buscar(q)};
+$("iaq").addEventListener("keydown",e=>{if(e.key==="Enter"){const q=e.target.value.trim();if(q)buscar(q)}});
+document.querySelectorAll(".ex .chip").forEach(c=>c.onclick=()=>{$("iaq").value=c.dataset.q;buscar(c.dataset.q)});
+})();
 </script>
 </body>
 </html>
