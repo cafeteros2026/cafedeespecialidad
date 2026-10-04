@@ -173,7 +173,7 @@ $("reset").onclick=resetAll;
 ["q","tipo","origen","val","min","stock","free","dom","sca","orden"].forEach(i=>$(i).addEventListener("input",()=>{show=24;render()}));
 $("more").onclick=()=>{show+=24;render()};
 fetch("cafes.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()})
- .then(j=>{D=j.map((d,i)=>(d.i=i,d));poblarOrigenes();
+ .then(j=>{D=j.filter(d=>+d.pr>0).map((d,i)=>(d.i=i,d));poblarOrigenes();
   if(!D.some(d=>d.rt!=null)){$("orden").querySelector('[value=rt]').remove();$("orden").value="pa";$("val").closest(".f").style.display="none"}
   render()},()=>{$("count").textContent="";$("grid").innerHTML='<div class="empty" style="grid-column:1/-1">Aún no hay cafés cargados.</div>'});
 fetch("estado.json",{cache:"no-cache"}).then(r=>r.json()).then(e=>{$("upd").textContent="Datos actualizados el "+new Date(e.fecha).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})+". "}).catch(()=>{});

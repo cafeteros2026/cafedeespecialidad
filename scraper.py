@@ -50,6 +50,17 @@ def num(v):
     except Exception: return None
 
 def no_cafe(s): return any(x in s.lower() for x in NO)
+NEG = re.compile(r"\b(?:molinill|grinder|m[aá]quina|cafeter|accesorio|merch|camiseta|gorra|sudadera|tote|regalo|gift|tarjeta|curso|formaci|taller|suscrip|pack|kit\b|b[aá]scula|jarra|tetera|hervidor|limpi|descalcific|tamper|portafiltro|dripper|chemex|aeropress|c[aá]psula|taza(?! de excelencia)|vaso|termo|prueba|test\b|comprobaci|tools|equipamiento|herramienta|libro|delantal|pegatina|p[oó]ster|mug\b|filtros? de papel|papel)", re.I)
+POS = re.compile(r"caf[eé]\b|coffee|grano|espresso|origen|tueste|blend|especialidad|single|microlote|descafe|decaf", re.I)
+
+def es_cafe(nombre, cab, desc, tiene_peso, precio, confiado=False):
+    """Solo café: sin señales de accesorio/máquina y con evidencia de que es café."""
+    if precio is None or precio <= 0 or NEG.search(f"{nombre} {cab}"): return False
+    if precio > 60 and not tiene_peso: return False
+    if confiado or POS.search(f"{nombre} {cab}"): return True
+    ev = pais(nombre, desc) and re.search(r"tueste|cata|notas|altitud|variedad|proceso|finca|cosecha", desc, re.I)
+    return bool(ev) and (tiene_peso or precio < 40)
+
 def gramos(s):
     m = re.search(r"(\d{3,4})\s?(?:g|gr)\b", s or "", re.I); return int(m.group(1)) if m else None
 def hallar(d, t): return [k for k, v in d.items() if any(re.search(r"\b" + re.escape(x), t, re.I) for x in v)]
@@ -90,12 +101,11 @@ def shopify(t):
             cab = f"{p['title']} {p.get('product_type','')} {' '.join(tags)}"
             vs = p.get("variants") or []
             pesos = any(gramos(v.get("title", "")) for v in vs)
-            if no_cafe(cab) or not (pesos or re.search(r"caf[eé]|coffee|espresso|filtro|grano|blend", cab, re.I)): continue
             mejor = None
             for v in vs:
                 g = gramos(v.get("title", "")); pr = float(v["price"])
                 if mejor is None or g == 250: mejor = (pr, g)
-            if not mejor: continue
+            if not mejor or not es_cafe(p["title"], f"{p.get('product_type','')} {' '.join(tags)}", texto(p.get('body_html')), pesos, mejor[0]): continue
             out.append(ficha(t, p["title"], f"{t['org']}/products/{p['handle']}", p["images"][0]["src"] if p.get("images") else "",
                 f"{cab} {texto(p.get('body_html'))}", mejor[0], any(v.get("available") for v in vs), mejor[1]))
         time.sleep(1)
@@ -108,11 +118,12 @@ def woo(t):
         if not d: break
         for p in d:
             cats = " ".join(c["name"] for c in p.get("categories", []))
-            if no_cafe(f"{p['name']} {cats}"): continue
-            pr = p["prices"]
+            pr = p["prices"]; precio = int(pr.get("price") or 0) / 10 ** pr.get("currency_minor_unit", 2)
+            desc = f"{texto(p.get('short_description'))} {texto(p.get('description'))}"
+            if not es_cafe(p["name"], cats, desc, bool(gramos(p["name"]) or gramos(desc)), precio): continue
             out.append(ficha(t, p["name"], p["permalink"], p["images"][0]["src"] if p.get("images") else "",
                 f"{p['name']} {cats} {texto(p.get('short_description'))} {texto(p.get('description'))}",
-                int(pr["price"]) / 10 ** pr.get("currency_minor_unit", 2), p.get("is_in_stock", True), gramos(p["name"])))
+                precio, p.get("is_in_stock", True), gramos(p["name"])))
         if len(d) < 100: break
         time.sleep(1)
     return out
@@ -133,7 +144,7 @@ def enlaces(soup, base, org, fn):
         if pu.netloc == up.urlparse(org).netloc and fn(pu.path) and u not in res: res.append(u)
     return res
 
-def pagina(t, u):
+def pagina(t, u, confiar=False):
     soup = BeautifulSoup(get(u), "html.parser"); prod = None
     for s in soup.find_all("script", type="application/ld+json"):
         try: d = json.loads(s.string or "")
@@ -145,20 +156,23 @@ def pagina(t, u):
     of = (prod or {}).get("offers") or {}
     of = of[0] if isinstance(of, list) and of else of if isinstance(of, dict) else {}
     pr = num(of.get("price") or meta("product:price:amount"))
-    if not n or pr is None or no_cafe(n + u): return None
+    if not n or pr is None: return None
     img = (prod or {}).get("image") or meta("og:image")
     img = img[0] if isinstance(img, list) and img else img.get("url", "") if isinstance(img, dict) else img
     desc = " ".join(e.get_text(" ") for e in soup.select("[itemprop=description], .product-description, #description, .product-information"))
     txt = f"{n} {(prod or {}).get('description','')} {desc} {meta('og:description')}"
+    if not es_cafe(n, up.urlparse(u).path, f"{desc} {meta('og:description')}", bool(gramos(n) or gramos(desc)), pr, confiar): return None
     stock = "OutOfStock" not in str(of.get("availability", ""))
     return ficha(t, n, u, img if isinstance(img, str) else "", txt, pr, stock, gramos(n))
 
 def html_generico(t):
+    confiar = bool(t["cat"])
     if t["cat"]: listados = [t["cat"]]
     else:
         home = BeautifulSoup(get(t["web"]), "html.parser")
-        listados = [l for l in enlaces(home, t["web"], t["org"], es_categoria)
-                    if re.search(r"caf|coffee|grano|tienda|shop|origen|especial", l, re.I)] or [t["web"]]
+        sel = [l for l in enlaces(home, t["web"], t["org"], es_categoria)
+               if re.search(r"caf|coffee|grano|tienda|shop|origen|especial", l, re.I)]
+        confiar, listados = bool(sel), sel or [t["web"]]
     vistos = []
     for base in listados[:5]:
         for pg in range(1, 21):
@@ -169,7 +183,7 @@ def html_generico(t):
             vistos += nuevos; time.sleep(1)
     out = []
     for l in vistos[:300]:
-        try: f = pagina(t, l)
+        try: f = pagina(t, l, confiar)
         except Exception: continue
         if f: out.append(f)
         time.sleep(1)
@@ -195,7 +209,7 @@ def main():
     total, informe = [], []
     for t, (metodo, cafes, err) in zip(tostadores, res):
         if not cafes:  # si falla, conserva lo anterior para no vaciar la web
-            cafes = [c for c in viejo if c.get("r") == t["nombre"]]; err = (err + " (se conservan datos anteriores)").strip()
+            cafes = [c for c in viejo if c.get("r") == t["nombre"] and (c.get("pr") or 0) > 0]; err = (err + " (se conservan datos anteriores)").strip()
         total += cafes
         informe.append({"tostador": t["nombre"], "metodo": metodo, "cafes": len(cafes), "error": err})
         print(f"{metodo:12} {len(cafes):3}  {t['nombre']} {err}")
