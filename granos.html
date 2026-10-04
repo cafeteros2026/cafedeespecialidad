@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Granos · Comparador de Café de Especialidad en España</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #EDE3D3; --card: #F7F0E4; --ink: #2A1A12; --mute: #7B6657;
+  --line: #D8C8B1; --acc: #6B3A22; --accT: #F7F0E4; --chip: #E3D3BB; --ok: #4F6B3A;
+  box-sizing: border-box;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1C130E; --card: #271B14; --ink: #F0E4D2; --mute: #A38E7B;
+    --line: #3D2C21; --acc: #D2A06A; --accT: #1C130E; --chip: #35261C; --ok: #9DBB82;
+  }
+}
+*, *:before, *:after { box-sizing: inherit; }
+body { margin:0; background-color: var(--bg); color: var(--ink); font: 400 16px/1.5 "DM Sans", sans-serif; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+header { padding: 40px 0 24px; }
+.logo { font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em; font-size: 13px; }
+h1 { font: 400 clamp(42px, 8vw, 76px)/0.98 'Instrument Serif', Georgia, serif; margin: 12px 0; }
+h1 em { font-style: italic; color: var(--acc); }
+.lead { color: var(--mute); max-width: 55ch; margin: 0 0 24px; }
+.layout { display: grid; grid-template-columns: 260px 1fr; gap: 32px; padding-bottom: 64px; }
+aside { align-self: start; position: sticky; top: 16px; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.f { margin-bottom: 18px; } .f:last-child { margin-bottom: 0; }
+.f > label, .f > b { display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+input[type=search], select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 5px 11px; border-radius: 99px; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed=true] { background: var(--acc); color: var(--accT); border-color: var(--acc); }
+.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 6px; }
+.bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.cafe { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.cafe h2 { font: 400 26px/1.05 'Instrument Serif', Georgia, serif; margin: 0; }
+.who { color: var(--mute); font-size: 14px; margin: 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
+.tag { background: var(--chip); padding: 3px 9px; border-radius: 99px; }
+.tag.sca { border: 1px solid var(--acc); color: var(--acc); font-weight: 700; background: transparent; }
+.notes { font: italic 400 18px 'Instrument Serif', Georgia, serif; color: var(--acc); margin: 0; }
+.foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--line); }
+.price { font: 400 24px 'Instrument Serif', Georgia, serif; }
+.buy { background: var(--acc); color: var(--accT); text-decoration: none; padding: 8px 16px; border-radius: 99px; font-weight: 700; font-size: 14px; }
+footer { border-top: 1px dashed var(--line); padding: 24px 0 40px; color: var(--mute); font-size: 13px; margin-top: 40px; }
+@media(max-width: 820px) { .layout { grid-template-columns: 1fr; } aside { position: static; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">Granos · Café de Especialidad</div>
+  <h1>Encuentra tu café ideal, <em>sin dar rodeos</em></h1>
+  <p class="lead">Compara en tiempo real los mejores tostadores artesanales de España por notas de cata, origen, proceso y puntuación SCA.</p>
+</header>
+
+<div class="layout">
+<aside><div class="panel">
+  <div class="f"><label for="q">Buscar</label><input id="q" type="search" placeholder="Café, tostador, origen…"></div>
+  <div class="f"><label for="tipo">Método</label>
+    <select id="tipo"><option value="">Cualquier método</option><option>Espresso</option><option>Filtro</option></select>
+  </div>
+  <div class="f"><label for="origen">Origen</label><select id="origen"><option value="">Todos los orígenes</option></select></div>
+  <div class="f"><b>Notas de cata</b><div class="chips" id="notas"></div></div>
+  <div class="f">
+    <div class="chk"><input type="checkbox" id="stock"><label for="stock">Solo en stock</label></div>
+    <div class="chk"><input type="checkbox" id="sca"><label for="sca">Con puntuación SCA</label></div>
+  </div>
+</div></aside>
+
+<main>
+  <div class="bar">
+    <span id="count" style="color:var(--mute); font-size:14px"></span>
+    <select id="orden" style="width:auto">
+      <option value="pa">Precio: menor a mayor</option>
+      <option value="pd">Precio: mayor a menor</option>
+    </select>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+</div>
+
+<footer>
+  <span id="upd"></span>Algunos enlaces son de afiliado: si compras a través de ellos recibimos una pequeña comisión que financia el proyecto sin coste adicional para ti.
+</footer>
+</div>
+
+<script>
+let D = []; const sel = new Set();
+const NOTAS = ["Frutos rojos","Cítrico","Floral","Chocolate","Caramelo","Miel","Frutos secos","Té"];
+const $ = id => document.getElementById(id);
+
+NOTAS.forEach(n => {
+  const b = document.createElement("button"); b.className = "chip"; b.textContent = n;
+  b.onclick = () => { sel.has(n) ? sel.delete(n) : sel.add(n); b.setAttribute("aria-pressed", sel.has(n)); render(); };
+  $("notas").appendChild(b);
+});
+
+function render() {
+  const q = $("q").value.toLowerCase(), t = $("tipo").value, o = $("origen").value;
+  let r = D.filter(d => 
+    (!q || (d.n + " " + d.r + " " + d.o).toLowerCase().includes(q)) &&
+    (!t || d.t === t || d.t === "Ambos") &&
+    (!o || d.o === o) &&
+    (!$("stock").checked || d.s) &&
+    (!$("sca").checked || d.sca) &&
+    [...sel].every(n => (d.nt || []).includes(n))
+  );
+  
+  if ($("orden").value === "pa") r.sort((a,b) => a.pr - b.pr);
+  if ($("orden").value === "pd") r.sort((a,b) => b.pr - a.pr);
+
+  $("count").textContent = `${r.length} cafés disponibles`;
+  $("grid").innerHTML = r.map(d => `
+    <article class="cafe">
+      <div>
+        <h2>${d.n}</h2>
+        <p class="who">${d.r}${d.c ? ' (' + d.c + ')' : ''}</p>
+      </div>
+      <p class="notes">${(d.nt || []).join(", ")}</p>
+      <div class="meta">
+        <span class="tag">${d.o}</span>
+        <span class="tag">${d.p}</span>
+        ${d.sca ? `<span class="tag sca">SCA ${d.sca}</span>` : ""}
+      </div>
+      <div class="foot">
+        <div class="price">${(d.pr || 0).toFixed(2)} €</div>
+        <a class="buy" href="${d.aff_url || d.u}" target="_blank" rel="sponsored noopener">Comprar</a>
+      </div>
+    </article>
+  `).join("");
+}
+
+fetch("cafes.json").then(r => r.json()).then(j => {
+  D = j;
+  [...new Set(D.map(d => d.o))].sort().forEach(o => $("origen").add(new Option(o, o)));
+  render();
+});
+fetch("estado.json").then(r => r.json()).then(e => {
+  $("upd").textContent = "Última actualización: " + new Date(e.fecha).toLocaleDateString("es-ES") + ". ";
+});
+["q","tipo","origen","stock","sca","orden"].forEach(id => $(id).addEventListener("input", render));
+</script>
+</body>
+</html>
