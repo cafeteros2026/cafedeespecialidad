@@ -148,21 +148,21 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 function render(){
 const q=norm($("q").value),t=$("tipo").value,o=$("origen").value,v=+$("val").value,m=+$("min").value;
 $("valv").textContent=v.toFixed(1);$("minv").textContent=m>=60?"sin límite":m+" €";
-let r=D.filter(d=>(!q||norm([d.n,d.r,d.c,d.o,...d.nt].join(" ")).includes(q))
+let r=D.filter(d=>(!q||norm([d.n,d.r,d.c,d.o,...(d.nt||[])].join(" ")).includes(q))
 &&(!t||d.t===t||d.t==="Ambos")&&(!o||d.o===o)&&d.rt>=v&&(m>=60||d.mn<=m)
-&&(!$("stock").checked||d.s)&&(!$("sca").checked||d.sca)&&(!$("free").checked||d.sh!==null)&&(!$("dom").checked||d.dom)
-&&(!iaIds||iaIds.includes(d.i))&&[...sel].every(n=>d.nt.includes(n)));
+&&(!$("stock").checked||d.s)&&(!$("sca").checked||d.sca)&&(!$("free").checked||d.sh!=null)&&(!$("dom").checked||d.dom)
+&&(!iaIds||iaIds.includes(d.i))&&[...sel].every(n=>(d.nt||[]).includes(n)));
 const k=$("orden").value;
-r.sort((a,b)=>iaIds?iaIds.indexOf(a.i)-iaIds.indexOf(b.i):k==="pa"?a.pr-b.pr:k==="pd"?b.pr-a.pr:b.rt-a.rt);
+r.sort((a,b)=>iaIds?iaIds.indexOf(a.i)-iaIds.indexOf(b.i):k==="pa"?a.pr-b.pr:k==="pd"?b.pr-a.pr:(b.rt||0)-(a.rt||0));
 $("count").textContent=r.length+(r.length===1?" café encontrado":" cafés encontrados");
 const tot=r.length;r=r.slice(0,show);$("more").style.display=tot>show?"block":"none";$("grid").innerHTML=r.length?r.map(d=>`<article class="cafe ${d.s?"":"off"}">
 ${d.img?`<img class="foto" src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" width="400" height="300" onerror="this.remove()">`:""}
 <div><h2>${esc(d.n)}</h2><p class="who">${d.logo?`<img class="logo-t" src="${esc(d.logo)}" alt="" loading="lazy" onerror="this.remove()">`:""}${esc(d.r)}, ${esc(d.c)}${d.g?` · <span class="gr" title="Valoración en Google Maps">★ ${d.g.toFixed(1).replace(".",",")} en Google${d.gn?` <small>(${d.gn})</small>`:""}</span>`:""}</p></div>
-<p class="notes">${d.nt.map(esc).join(", ")}</p>
+<p class="notes">${(d.nt||[]).map(esc).join(", ")}</p>
 <div class="meta">${d.o?`<span class="tag">${flag(d.o)}${esc(d.o)}</span>`:""}${d.p?`<span class="tag">${esc(d.p)}</span>`:""}<span class="tag">${esc(d.t)}</span>${d.sca?`<span class="tag sca" title="Puntuación SCA">SCA ${d.sca}</span>`:""}</div>
-<div class="rt">★ ${d.rt.toFixed(1)} <span>valoración</span></div>
-<p class="ship ${d.sh!==null?"ok":""}">${d.sh!==null?"Envío gratis desde "+d.sh+" €":"Envío con coste"}${d.mn?" · Pedido mínimo "+d.mn+" €":""}${d.s?"":" · Agotado ahora"}</p>
-<div class="foot"><div class="price">${d.pr.toFixed(2).replace(".",",")} €<small> / 250 g</small></div>
+${d.rt!=null?`<div class="rt">★ ${d.rt.toFixed(1)} <span>valoración</span></div>`:""}
+<p class="ship ${d.sh!=null?"ok":""}">${d.sh!=null?"Envío gratis desde "+d.sh+" €":"Envío con coste"}${d.mn?" · Pedido mínimo "+d.mn+" €":""}${d.s?"":" · Agotado ahora"}</p>
+<div class="foot"><div class="price">${(+d.pr||0).toFixed(2).replace(".",",")} €<small> / 250 g</small></div>
 <a class="buy" href="${esc(d.aff_url||link(d))}" target="_blank" rel="sponsored noopener">${d.s?"Me lo llevo":"Agotado"}</a></div></article>`).join("")
 :`<div class="empty" style="grid-column:1/-1">Ni un solo grano con esos filtros. Quita alguno, que no somos tan exigentes. <button class="reset" onclick="resetAll()">Limpiar filtros</button></div>`}
 
@@ -173,8 +173,9 @@ $("reset").onclick=resetAll;
 ["q","tipo","origen","val","min","stock","free","dom","sca","orden"].forEach(i=>$(i).addEventListener("input",()=>{show=24;render()}));
 $("more").onclick=()=>{show+=24;render()};
 fetch("cafes.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()})
- .then(j=>{D=j.map((d,i)=>(d.i=i,d));poblarOrigenes();render()})
- .catch(()=>{$("count").textContent="";$("grid").innerHTML='<div class="empty" style="grid-column:1/-1">Aún no hay cafés cargados.</div>'});
+ .then(j=>{D=j.map((d,i)=>(d.i=i,d));poblarOrigenes();
+  if(!D.some(d=>d.rt!=null)){$("orden").querySelector('[value=rt]').remove();$("orden").value="pa";$("val").closest(".f").style.display="none"}
+  render()},()=>{$("count").textContent="";$("grid").innerHTML='<div class="empty" style="grid-column:1/-1">Aún no hay cafés cargados.</div>'});
 fetch("estado.json",{cache:"no-cache"}).then(r=>r.json()).then(e=>{$("upd").textContent="Datos actualizados el "+new Date(e.fecha).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})+". "}).catch(()=>{});
 
 // ===== Búsqueda con IA (se activa solo si el visor la permite) =====
