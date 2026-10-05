@@ -2,7 +2,7 @@
 scraper.py: lee los cafés de cada tostador de lista_tostadores.csv y genera cafes.json,
 estado.json e informe.csv (qué ha pasado con cada tostador).
 Orden de métodos por tostador: Shopify -> WooCommerce -> HTML genérico (PrestaShop y otros).
-Columnas opcionales en el CSV: URL_Catalogo (página de listado de cafés, recomendada para
+Columnas opcionales en el CSV: Affiliate_Template (enlace de red de afiliación con {url}), URL_Catalogo (página de listado de cafés, recomendada para
 tiendas que no son Shopify/Woo), Envio_Gratis, Pedido_Minimo.
 """
 import csv, json, os, re, time, urllib.parse as up
@@ -63,7 +63,7 @@ def leer_csv(p="lista_tostadores.csv"):
                 "ciudad": (r.get("Ciudad") or "").strip(), "cat": (r.get("URL_Catalogo") or "").strip(),
                 "sh": r.get("Envio_Gratis") or "", "mn": r.get("Pedido_Minimo") or "",
                 "param": (r.get("Affiliate_Param") or "").strip() or "ref", "code": (r.get("Affiliate_Code") or "").strip(),
-                "aff": (r.get("Affiliate_URL") or "").strip()})
+                "aff": (r.get("Affiliate_URL") or "").strip(), "tpl": (r.get("Affiliate_Template") or "").strip()})
     return out
 
 def num(v):
@@ -71,7 +71,7 @@ def num(v):
     except Exception: return None
 
 def no_cafe(s): return any(x in s.lower() for x in NO)
-NEG = re.compile(r"\b(?:molinill|grinder|m[aá]quina|cafeter|accesorio|merch|camiseta|gorra|sudadera|tote|regalo|gift|tarjeta|curso|formaci|taller|suscrip|pack|kit\b|b[aá]scula|jarra|tetera|hervidor|limpi|descalcific|tamper|portafiltro|dripper|chemex|aeropress|c[aá]psula|taza(?! de excelencia)|vaso|termo|prueba|test\b|comprobaci|tools|equipamiento|herramienta|libro|delantal|pegatina|p[oó]ster|mug\b|filtros? de papel|papel|nuez|nueces|pipas|pasas|cacahuete|almendra|avellana|pistacho|anacardo|d[aá]til|higo|orejones|frutos secos|snack|galleta|turr[oó]n|aceite|cerveza|infusi|tisana|rooibos|matcha|chai|t[eé] (?:verde|negro|rojo|blanco)|vino|licor|tableta|bomb[oó]n|bizcocho)", re.I)
+NEG = re.compile(r"\b(?:molinill|grinder|m[aá]quina|cafeter|accesorio|merch|camiseta|gorra|sudadera|tote|regalo|gift|tarjeta|curso|formaci|taller|suscrip|pack|kit\b|b[aá]scula|jarra|tetera|hervidor|limpi|descalcific|tamper|portafiltro|dripper|chemex|aeropress|c[aá]psula|taza(?! de excelencia)|vaso|termo|prueba|test\b|comprobaci|tools|equipamiento|herramienta|libro|delantal|pegatina|p[oó]ster|mug\b|filtros? de papel|papel|nuez|nueces|pipas|pasas|cacahuete|almendra|avellana|pistacho|anacardo|d[aá]til|higo|orejones|frutos secos|snack|galleta|turr[oó]n|aceite|cerveza|infusi|tisana|rooibos|matcha|chai|t[eé] (?:verde|negro|rojo|blanco)|vino|licor|tableta|bomb[oó]n|bizcocho|leche|condensad|dulces?\b|crema de|sirope|jarabe|helado|cookie|soluble|salsa|mermelada)", re.I)
 POS = re.compile(r"caf[eé]\b|coffee|grano|espresso|origen|tueste|blend|especialidad|single|microlote|descafe|decaf", re.I)
 
 CAFE_TXT = re.compile(r"tueste|ar[aá]bica|espresso|molido|\bgranos?\b|cafetera|altitud|\bcata\b|finca|caf[eé] de especialidad", re.I)
@@ -104,27 +104,32 @@ def pais(titulo, txt):
 
 def afiliado(u, t):
     if t["aff"]: return t["aff"]
+    if t["tpl"]: return t["tpl"].replace("{url}", up.quote(u, safe=""))   # plantilla de red de afiliación
     q = up.parse_qs(up.urlparse(u).query)
     if t["code"]: q[t["param"]] = [t["code"]]
     q["utm_source"] = ["granos"]
     return up.urlunparse(up.urlparse(u)._replace(query=up.urlencode(q, doseq=True)))
 
 def ficha(t, n, u, img, txt, precio, stock, g=None):
-    pr = round(precio * 250 / g, 2) if g and g != 250 else round(precio, 2)
+    pr = round(precio, 2)
     tl = txt.lower()
     return {"n": norm(n), "r": t["nombre"], "c": t["ciudad"], "u": u, "aff_url": afiliado(u, t), "img": img or "",
         "mt": hallar(METODOS, txt),
-        "o": pais(n, txt), "p": (hallar(PROC, txt) or [""])[0], "nt": hallar(NOTAS, txt), "pr": pr, "s": bool(stock),
+        "o": pais(n, txt), "p": (hallar(PROC, txt) or [""])[0], "nt": hallar(NOTAS, txt), "pr": pr, "g": g, "p250": round(precio * 250 / g, 2) if g else None,
+        "af": bool(t["aff"] or t["tpl"] or t["code"]), "s": bool(stock),
         "sca": sca(txt), "rt": None, "sh": num(t["sh"]), "mn": num(t["mn"]) or 0}
 
 def norm(s): return re.sub(r"\s+", " ", s or "").strip()
 def texto(h): return norm(BeautifulSoup(h or "", "html.parser").get_text(" "))
 
 def shopify(t):
-    out = []
+    out, ruta = [], "/products.json"
     for pg in range(1, 11):
         if agotado(t): break
-        d = get(f"{t['org']}/products.json?limit=250&page={pg}", True)["products"]
+        try: d = get(f"{t['org']}{ruta}?limit=250&page={pg}", True)["products"]
+        except Exception:
+            if pg > 1 or ruta != "/products.json": raise
+            ruta = "/collections/all/products.json"; d = get(f"{t['org']}{ruta}?limit=250&page={pg}", True)["products"]
         if not d: break
         for p in d:
             tags = p.get("tags") or []; tags = tags.split(",") if isinstance(tags, str) else tags
@@ -133,7 +138,7 @@ def shopify(t):
             pesos = any(gramos(v.get("title", "")) for v in vs)
             mejor = None
             for v in vs:
-                g = gramos(v.get("title", "")); pr = float(v["price"])
+                g = gramos(v.get("title", "")) or gramos(p["title"]); pr = float(v["price"])
                 if mejor is None or g == 250: mejor = (pr, g)
             if not mejor or not es_cafe(p["title"], f"{p.get('product_type','')} {' '.join(tags)}", texto(p.get('body_html')), pesos, mejor[0]): continue
             out.append(ficha(t, p["title"], f"{t['org']}/products/{p['handle']}", p["images"][0]["src"] if p.get("images") else "",
@@ -155,7 +160,7 @@ def woo(t):
             if not es_cafe(p["name"], cats, desc, bool(gramos(p["name"]) or gramos(desc) or gramos(attr)), precio): continue
             out.append(ficha(t, p["name"], p["permalink"], p["images"][0]["src"] if p.get("images") else "",
                 f"{p['name']} {cats} {attr} {desc}",
-                precio, p.get("is_in_stock", True), gramos(p["name"])))
+                precio, p.get("is_in_stock", True), gramos(p["name"]) or gramos(attr)))
         if len(d) < 100: break
         time.sleep(1)
     return out
@@ -301,10 +306,12 @@ def main():
         res = list(ex.map(procesar, tostadores))
     total, informe = [], []
     for t, (metodo, cafes, err) in zip(tostadores, res):
+        pista = ""
         if not cafes:
+            pista = huella(t)
             cafes = [c for c in viejo if c.get("r") == t["nombre"] and (c.get("pr") or 0) > 0]; err = (err + " (se conservan datos anteriores)").strip()
         total += cafes
-        informe.append({"tostador": t["nombre"], "metodo": metodo, "cafes": len(cafes), "error": err})
+        informe.append({"tostador": t["nombre"], "metodo": metodo, "cafes": len(cafes), "error": err, "pista": pista})
         print(f"{metodo:12} {len(cafes):3}  {t['nombre']} {err}")
     for i, c in enumerate(total): c["i"] = i
     json.dump(total, open("cafes.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -312,7 +319,7 @@ def main():
                "total_tostadores": len(tostadores), "sin_datos": [x["tostador"] for x in informe if x["cafes"] == 0]},
               open("estado.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     with open("informe.csv", "w", encoding="utf-8-sig", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["tostador", "metodo", "cafes", "error"], delimiter=";")
+        w = csv.DictWriter(f, fieldnames=["tostador", "metodo", "cafes", "error", "pista"], delimiter=";")
         w.writeheader(); w.writerows(informe)
     print(f"[ok] {len(total)} cafés de {len(tostadores)} tostadores")
 
