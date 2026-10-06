@@ -5,7 +5,7 @@ Orden de métodos por tostador: Shopify -> WooCommerce -> HTML genérico (Presta
 Columnas opcionales en el CSV: Affiliate_Template (enlace de red de afiliación con {url}), URL_Catalogo (página de listado de cafés, recomendada para
 tiendas que no son Shopify/Woo), Envio_Gratis, Pedido_Minimo.
 """
-import csv, json, os, re, time, urllib.parse as up
+import csv, json, os, re, threading, time, unicodedata, urllib.parse as up
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import requests
@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
      "Accept-Language": "es-ES,es;q=0.9,en;q=0.8", "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8"}
 RECHAZ = []
+LOC = threading.local()          # rechazos por tostador (cada hilo lleva los suyos)
 VERBOSO = False
 def log(*a):
     if VERBOSO: print(*a, flush=True)
@@ -78,7 +79,7 @@ CAFE_TXT = re.compile(r"tueste|ar[aá]bica|espresso|molido|\bgranos?\b|cafetera|
 
 def es_cafe(nombre, cab, desc, tiene_peso, precio, confiado=False):
     """Solo café: descarta accesorios, máquinas, merch y otros alimentos; exige evidencia de café."""
-    def no(m): RECHAZ.append(f"{nombre} [{m}]"); return False
+    def no(m): getattr(LOC, "rech", RECHAZ).append(f"{nombre} [{m}]"); return False
     if precio is None or precio <= 0: return no("sin precio")
     if NEG.search(f"{nombre} {cab}"): return no("accesorio/alimento/merch")
     if precio > 60 and not tiene_peso: return no("precio alto sin gramos")
@@ -96,10 +97,18 @@ def hallar(d, t): return [k for k, v in d.items() if any(re.search(r"\b" + re.es
 def sca(t):
     m = re.search(r"(?:sca|puntuaci[oó]n|score)\D{0,12}(8\d(?:[.,]\d)?|9[0-5](?:[.,]\d)?)|(8\d(?:[.,]\d)?|9[0-5](?:[.,]\d)?)\s*(?:pts|puntos|points|sca)\b", t, re.I)
     return float((m.group(1) or m.group(2)).replace(",", ".")) if m else None
+ALIAS = {"Etiopía": ["ethiopia", "guji", "yirgacheffe", "sidamo", "sidama", "harrar", "limu", "jimma"],
+ "Kenia": ["kenya", "nyeri", "kiambu", "kirinyaga", "muranga"], "Colombia": ["huila", "narino", "cauca", "tolima", "quindio", "antioquia"],
+ "Brasil": ["brazil", "cerrado", "minas gerais", "mogiana"], "Guatemala": ["huehuetenango", "atitlan"], "Costa Rica": ["tarrazu"],
+ "Perú": ["peru", "cajamarca", "chanchamayo", "cusco"], "Honduras": ["marcala", "copan"], "Panamá": ["panama", "boquete"],
+ "Ruanda": ["rwanda"], "Nicaragua": ["jinotega", "matagalpa"], "El Salvador": ["santa ana", "apaneca"], "México": ["mexico", "chiapas", "oaxaca"],
+ "Indonesia": ["sumatra", "sulawesi", "java"], "Bolivia": ["caranavi"], "India": ["malabar"]}
+def sa(x): return "".join(c for c in unicodedata.normalize("NFD", (x or "").lower()) if unicodedata.category(c) != "Mn")
 def pais(titulo, txt):
     for src in (titulo, txt):
+        e = sa(src)
         for p in ORIG:
-            if re.search(r"\b" + p, src, re.I): return p
+            if any(re.search(r"\b" + re.escape(c) + r"\b", e) for c in [sa(p)] + ALIAS.get(p, [])): return p
     return "Blend" if "blend" in titulo.lower() else ""
 
 def afiliado(u, t):
@@ -114,7 +123,7 @@ def ficha(t, n, u, img, txt, precio, stock, g=None):
     pr = round(precio, 2)
     tl = txt.lower()
     return {"n": norm(n), "r": t["nombre"], "c": t["ciudad"], "u": u, "aff_url": afiliado(u, t), "img": img or "",
-        "mt": hallar(METODOS, txt),
+        "mt": (lambda m: [] if len(m) >= 4 else m)(hallar(METODOS, txt)),
         "o": pais(n, txt), "p": (hallar(PROC, txt) or [""])[0], "nt": hallar(NOTAS, txt), "pr": pr, "g": g, "p250": round(precio * 250 / g, 2) if g else None,
         "af": bool(t["aff"] or t["tpl"] or t["code"]), "s": bool(stock),
         "sca": sca(txt), "rt": None, "sh": num(t["sh"]), "mn": num(t["mn"]) or 0}
@@ -170,7 +179,31 @@ RUTAS = ["/tienda", "/shop", "/productos", "/cafe", "/cafes", "/collections/all"
 def es_producto(path):   # PrestaShop /es/cafetazos/207-1700-x  |  Woo /producto/x  |  Shopify /products/x
     s = path.strip("/").split("/")
     if re.fullmatch(r"\d+-[\w-]+(\.html)?", s[-1]) and any(not re.fullmatch(r"[a-z]{2}", x) for x in s[:-1]): return True
-    return len(s) >= 2 and s[-2] in ("producto", "productos", "product", "products", "p", "tienda", "shop")
+    if len(s) >= 3 and s[-3] == "product": return True      # Square Online: /product/slug/ID
+    return len(s) >= 2 and s[-2] in ("producto", "productos", "product", "products", "product-page", "p", "tienda", "shop")
+
+EXCL = re.compile(r"cart|carrito|checkout|cuenta|account|login|contact|blog|politica|aviso|cookies|envios|condiciones|faq|nosotros|about|privacidad", re.I)
+
+def enlaces_tarjeta(soup, base, org):
+    """Plataformas sin patrón de URL claro: enlaces cuya 'tarjeta' (el bloque que los rodea) muestra un precio en €."""
+    res = []
+    for a in soup.find_all("a", href=True):
+        u = up.urljoin(base, a["href"]).split("#")[0].split("?")[0]; pu = up.urlparse(u)
+        if dominio(pu.netloc) != dominio(up.urlparse(org).netloc) or u in res or u.rstrip("/") == base.rstrip("/") or EXCL.search(pu.path): continue
+        nodo = a
+        for _ in range(4):
+            nodo = nodo.parent
+            if nodo is None: break
+            txt = nodo.get_text(" ", strip=True)
+            if len(txt) > 400: break
+            if re.search(r"\d+[.,]\d{2}\s?€|€\s?\d+[.,]\d{2}|\d+\s?€", txt): res.append(u); break
+    return res
+
+def precio_html(soup):
+    for e in soup.select(".price, .product-price, [itemprop=price], .current-price, .sqs-money-native, .woocommerce-Price-amount, .amount"):
+        m = re.search(r"(\d{1,4}(?:[.,]\d{1,2})?)", e.get("content") or e.get_text(" ", strip=True))
+        if m: return num(m.group(1))
+    return None
 
 def es_categoria(path):  # /es/3-cafetazos
     s = path.strip("/").split("/")
@@ -186,6 +219,11 @@ def enlaces(soup, base, org, fn):
         if dominio(pu.netloc) == dominio(up.urlparse(org).netloc) and fn(pu.path) and u not in res: res.append(u)
     return res
 
+def limpiar_nombre(n):
+    n = re.split(r"\s[—–|]\s", n)[0].strip()
+    n = re.sub(r"^caf[eé]s? de especialidad\s*[:\-–]?\s*", "", n, flags=re.I).strip() or n
+    return n[:1].upper() + n[1:] if n and n[0].islower() else n
+
 def pagina(t, u, confiar=False):
     soup = BeautifulSoup(get(u), "html.parser"); prod = None
     for s in soup.find_all("script", type="application/ld+json"):
@@ -198,12 +236,14 @@ def pagina(t, u, confiar=False):
     of = (prod or {}).get("offers") or {}
     of = of[0] if isinstance(of, list) and of else of if isinstance(of, dict) else {}
     pr = num(of.get("price") or meta("product:price:amount"))
+    if pr is None: pr = precio_html(soup)
+    n_raw, n = n, limpiar_nombre(n)
     if not n or pr is None: return None
     img = (prod or {}).get("image") or meta("og:image")
     img = img[0] if isinstance(img, list) and img else img.get("url", "") if isinstance(img, dict) else img
     desc = " ".join(e.get_text(" ") for e in soup.select("[itemprop=description], .product-description, #description, .product-information"))
-    txt = f"{n} {(prod or {}).get('description','')} {desc} {meta('og:description')}"
-    if not es_cafe(n, up.urlparse(u).path, f"{desc} {meta('og:description')}", bool(gramos(n) or gramos(desc)), pr, confiar): return None
+    txt = f"{n_raw} {(prod or {}).get('description','')} {desc} {meta('og:description')}"
+    if not es_cafe(n_raw, up.urlparse(u).path, f"{(prod or {}).get('description','')} {desc} {meta('og:description')}", bool(gramos(n) or gramos(desc)), pr, confiar): return None
     stock = "OutOfStock" not in str(of.get("availability", ""))
     return ficha(t, n, u, img if isinstance(img, str) else "", txt, pr, stock, gramos(n))
 
@@ -214,17 +254,28 @@ def html_generico(t):
         home = BeautifulSoup(get(t["web"]), "html.parser")
         sel = [l for l in enlaces(home, t["web"], t["org"], es_categoria)
                if re.search(r"caf|coffee|grano|tienda|shop|origen|especial", l, re.I) and not NEG.search(up.urlparse(l).path)]
-        tiendas = [l for l in enlaces(home, t["web"], t["org"], lambda p: bool(re.search(r"/(tienda|shop|productos?|store|comprar|cafes?|collections)(/|$)", p, re.I))) if not NEG.search(up.urlparse(l).path)]
+        tiendas = []
+        for a in home.find_all("a", href=True):
+            u = up.urljoin(t["web"], a["href"]).split("#")[0].split("?")[0]; pu = up.urlparse(u)
+            if (dominio(pu.netloc) != dominio(up.urlparse(t["org"]).netloc) or u in tiendas or u.rstrip("/") == t["web"].rstrip("/")
+                    or EXCL.search(pu.path) or NEG.search(pu.path) or es_producto(pu.path)): continue
+            if (re.search(r"tienda|shop|comprar|caf[eé]s?\b|productos|botiga|store|todos", a.get_text(" ", strip=True), re.I)
+                    or re.search(r"/(tienda|shop|productos?|store|comprar|cafes?|collections)[\w-]*(/|$)", pu.path, re.I)): tiendas.append(u)
         tiendas += [h for h in {up.urljoin(t["web"], a["href"]) for a in home.find_all("a", href=True)} if re.match(r"https?://(tienda|shop|store)\.", h)]
         confiar, listados = bool(sel), sel or (tiendas + [t["web"]] + [t["org"] + r for r in RUTAS])
     vistos = []
     for base in listados[:8]:
+        siguiente = None
         for pg in range(1, 21):
             if agotado(t): break
-            cands = [base] if pg == 1 else [base + ("&" if "?" in base else "?") + f"page={pg}", base.rstrip("/") + f"/page/{pg}/"]
+            cands = [base] if pg == 1 else ([siguiente] if siguiente else []) + [base + ("&" if "?" in base else "?") + f"page={pg}", base.rstrip("/") + f"/page/{pg}/"]
             nuevos = []
             for u in cands:
-                try: nuevos = [l for l in enlaces(BeautifulSoup(get(u), "html.parser"), u, t["org"], es_producto) if l not in vistos]
+                try:
+                    soup = BeautifulSoup(get(u), "html.parser")
+                    nuevos = [l for l in (enlaces(soup, u, t["org"], es_producto) or enlaces_tarjeta(soup, u, t["org"])) if l not in vistos]
+                    a = soup.find("a", rel="next") or soup.find("a", href=re.compile(r"[?&](?:offset|page)=\d"))
+                    siguiente = up.urljoin(u, a["href"]) if a else None
                 except Exception: nuevos = []
                 if nuevos: break
             if not nuevos: break
@@ -252,7 +303,7 @@ def sitemap(t):
         for loc in re.findall(r"<loc>\s*(.*?)\s*</loc>", xml):
             loc = loc.replace("&amp;", "&")
             if loc.endswith(".xml") or "sitemap" in loc.split("/")[-1]:
-                if re.search(r"product|producto|shop|tienda|store", loc, re.I): cola.append(loc)
+                if re.search(r"product|producto|shop|tienda|store", loc, re.I) or len(hechos) == 1: cola.append(loc)
             elif es_producto(up.urlparse(loc).path): urls.append(loc)
     out = []
     for l in urls[:150]:
@@ -268,27 +319,92 @@ def huella(t):
     try: h = get(t["web"])
     except Exception as e: return f"portada no accesible: {str(e)[:150]}"
     marcas = {"Shopify": "cdn.shopify.com", "WooCommerce": "woocommerce", "PrestaShop": "prestashop", "Wix": "wixstatic",
-              "Squarespace": "squarespace", "Magento": "mage-", "Webflow": "webflow"}
+              "Squarespace": "squarespace", "Magento": "magento", "Webflow": "webflow"}
     pl = [k for k, v in marcas.items() if v in h.lower()] or ["desconocida"]
     soup = BeautifulSoup(h, "html.parser")
     ents = [f"{a.get_text(' ', strip=True)[:25]} -> {up.urljoin(t['web'], a['href'])}" for a in soup.find_all("a", href=True)
             if re.search(r"tienda|shop|comprar|store|productos|collections", a["href"] + " " + a.get_text(" "), re.I)]
     return f"plataforma: {pl}; enlaces de tienda: {ents[:8]}"
 
-def procesar(t):
+def estado(u, j=False):
+    """Devuelve (resultado, texto): 'ok' o el motivo del fallo."""
+    try:
+        r = requests.get(u, headers=H, timeout=15)
+        if r.status_code != 200: return f"HTTP {r.status_code}", ""
+        if "just a moment" in r.text[:3000].lower(): return "bloqueado (Cloudflare)", ""
+        if j:
+            try: r.json()
+            except Exception: return "no es JSON", ""
+        return "ok", r.text
+    except requests.Timeout: return "timeout", ""
+    except Exception: return "sin conexión", ""
+
+def diag_uno(t):
+    p, home = estado(t["web"])
+    marcas = {"Shopify": "cdn.shopify.com", "WooCommerce": "woocommerce", "PrestaShop": "prestashop", "Wix": "wixstatic",
+              "Squarespace": "squarespace", "Magento": "magento", "Webflow": "webflow"}
+    return {"tostador": t["nombre"], "web": t["web"], "portada": p,
+            "plataforma": ", ".join(k for k, v in marcas.items() if v in home.lower()) or "?",
+            "shopify": estado(t["org"] + "/products.json?limit=1", True)[0],
+            "woocommerce": estado(t["org"] + "/wp-json/wc/store/v1/products?per_page=1", True)[0],
+            "sitemap": estado(t["org"] + "/sitemap.xml")[0]}
+
+def diagnostico():
+    import sys
+    filtro = sys.argv[2].lower() if len(sys.argv) > 2 else ""
+    ts = [t for t in leer_csv() if filtro in t["nombre"].lower()]
+    with ThreadPoolExecutor(max_workers=8) as ex: filas = list(ex.map(diag_uno, ts))
+    with open("diagnostico.csv", "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(filas[0].keys()), delimiter=";"); w.writeheader(); w.writerows(filas)
+    print(f"Guardado en: {os.path.abspath('diagnostico.csv')}\n")
+    ok = [x for x in filas if x["shopify"] == "ok" or x["woocommerce"] == "ok"]
+    print(f"{len(ok)} de {len(filas)} tostadores tienen una tienda Shopify/WooCommerce legible.\n\nA REVISAR (copia desde aquí):")
+    for x in filas:
+        if x not in ok:
+            print(f"- {x['tostador']} | portada: {x['portada']} | {x['plataforma']} | shopify: {x['shopify']} | woo: {x['woocommerce']} | sitemap: {x['sitemap']}")
+
+SOCIAL = re.compile(r"facebook|instagram|twitter|x\.com|youtube|tiktok|wa\.me|whatsapp|google|linkedin|pinterest|goo\.gl|linktr\.ee|amazon|tripadvisor|spotify|apple\.com", re.I)
+
+def tiendas_externas(t):
+    """Tiendas alojadas en otro dominio (Square, shopcafes.com...) enlazadas desde la portada."""
+    try: home = BeautifulSoup(get(t["web"]), "html.parser")
+    except Exception: return []
+    res = []
+    for a in home.find_all("a", href=True):
+        pu = up.urlparse(up.urljoin(t["web"], a["href"]))
+        if not pu.scheme.startswith("http") or SOCIAL.search(pu.netloc) or dominio(pu.netloc) == dominio(up.urlparse(t["org"]).netloc): continue
+        if re.search(r"tienda|shop|botiga|comprar|store|compra|online", a.get_text(" ", strip=True) + " " + pu.netloc, re.I):
+            org = f"{pu.scheme}://{pu.netloc}"
+            if org not in res: res.append(org)
+    return res[:2]
+
+def intentar(t):
     metodos = [("shopify", shopify), ("woocommerce", woo), ("html", html_generico), ("sitemap", sitemap)]
     if t["cat"]: metodos = [metodos[2], metodos[0], metodos[1], metodos[3]]
-    err = ""; t["limite"] = time.time() + 240
+    err = ""
     for nombre, f in metodos:
+        t["limite"] = time.time() + 150      # plazo por método
         try:
             r = f(t); err += f"{nombre}: {len(r)}; "
             if r: return nombre, r, ""
         except Exception as e: err += f"{nombre}: error {str(e)[:150]}; "
     return "ninguno", [], err
 
+def procesar(t):
+    LOC.rech = []
+    m, r, e = intentar(t)
+    if not r:
+        for org in tiendas_externas(t):
+            m2, r2, e2 = intentar(dict(t, org=org, web=org, cat=""))
+            if r2: m, r, e = f"{m2}@{up.urlparse(org).netloc}", r2, ""; break
+            e += f"[{org}] {e2}"
+    t["_rech"] = list(LOC.rech)
+    return m, r, e
+
 def main():
     import sys
     global VERBOSO
+    if len(sys.argv) > 1 and sys.argv[1] == "--diagnostico": return diagnostico()
     filtro = sys.argv[1].lower() if len(sys.argv) > 1 else ""
     tostadores = [t for t in leer_csv() if filtro in t["nombre"].lower()]
     print(f"[*] {len(tostadores)} tostadores")
@@ -299,7 +415,7 @@ def main():
             metodo, cafes, err = procesar(t)
             print(f"\n== {t['nombre']}: método {metodo}, {len(cafes)} cafés. {err}")
             for c in cafes[:10]: print("  ", c["n"], c["pr"], c["o"], c["mt"], c["nt"])
-            print("   rechazados:", RECHAZ[:25])
+            print("   rechazados:", t.get("_rech", [])[:25])
         return
     viejo = json.load(open("cafes.json", encoding="utf-8")) if os.path.exists("cafes.json") else []
     with ThreadPoolExecutor(max_workers=8) as ex:
@@ -311,7 +427,7 @@ def main():
             pista = huella(t)
             cafes = [c for c in viejo if c.get("r") == t["nombre"] and (c.get("pr") or 0) > 0]; err = (err + " (se conservan datos anteriores)").strip()
         total += cafes
-        informe.append({"tostador": t["nombre"], "metodo": metodo, "cafes": len(cafes), "error": err, "pista": pista})
+        informe.append({"tostador": t["nombre"], "metodo": metodo, "cafes": len(cafes), "error": err, "pista": pista, "rechazados": " | ".join(t.get("_rech", [])[:8])})
         print(f"{metodo:12} {len(cafes):3}  {t['nombre']} {err}")
     for i, c in enumerate(total): c["i"] = i
     json.dump(total, open("cafes.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -319,7 +435,7 @@ def main():
                "total_tostadores": len(tostadores), "sin_datos": [x["tostador"] for x in informe if x["cafes"] == 0]},
               open("estado.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     with open("informe.csv", "w", encoding="utf-8-sig", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["tostador", "metodo", "cafes", "error", "pista"], delimiter=";")
+        w = csv.DictWriter(f, fieldnames=["tostador", "metodo", "cafes", "error", "pista", "rechazados"], delimiter=";")
         w.writeheader(); w.writerows(informe)
     print(f"[ok] {len(total)} cafés de {len(tostadores)} tostadores")
 
