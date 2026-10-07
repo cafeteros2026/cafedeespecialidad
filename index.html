@@ -134,9 +134,10 @@ const AFF = {param:"ref", id:"granos"};
 // Datos de ejemplo. n=nombre, r=tostador, c=ciudad, u=web, t=método, o=origen, pr=precio 250 g,
 // rt=valoración, sh=envío gratis desde (€, null si no hay), mn=pedido mínimo (€), s=disponible, dom=envío a domicilio
 let D=[];
+const MOSTRAR_GOOGLE=false;   // las notas de Google Maps están desactivadas (condiciones de uso de Google)
 const eur=v=>(+v||0).toFixed(2).replace(".",",");
 let iaIds=null,show=24;
-const FL={"Etiopía":"🇪🇹","Kenia":"🇰🇪","Colombia":"🇨🇴","Brasil":"🇧🇷","Guatemala":"🇬🇹","Costa Rica":"🇨🇷","Perú":"🇵🇪","Honduras":"🇭🇳","Burundi":"🇧🇮","Ruanda":"🇷🇼","Panamá":"🇵🇦","El Salvador":"🇸🇻","Nicaragua":"🇳🇮","México":"🇲🇽","Indonesia":"🇮🇩","Tanzania":"🇹🇿","Uganda":"🇺🇬","Venezuela":"🇻🇪","Bolivia":"🇧🇴","Ecuador":"🇪🇨","Yemen":"🇾🇪","India":"🇮🇳"};
+const FL={"Etiopía":"🇪🇹","Kenia":"🇰🇪","Colombia":"🇨🇴","Brasil":"🇧🇷","Guatemala":"🇬🇹","Costa Rica":"🇨🇷","Perú":"🇵🇪","Honduras":"🇭🇳","Burundi":"🇧🇮","Ruanda":"🇷🇼","Panamá":"🇵🇦","El Salvador":"🇸🇻","Nicaragua":"🇳🇮","México":"🇲🇽","Indonesia":"🇮🇩","Tanzania":"🇹🇿","Uganda":"🇺🇬","Venezuela":"🇻🇪","Papúa Nueva Guinea":"🇵🇬","Tailandia":"🇹🇭","Jamaica":"🇯🇲","Vietnam":"🇻🇳","Laos":"🇱🇦","Malawi":"🇲🇼","Zambia":"🇿🇲","República Dominicana":"🇩🇴","Hawái":"🇺🇸","Congo":"🇨🇩","Filipinas":"🇵🇭","Timor Oriental":"🇹🇱","Myanmar":"🇲🇲","Bolivia":"🇧🇴","Ecuador":"🇪🇨","Yemen":"🇾🇪","India":"🇮🇳"};
 const flag=o=>FL[o]?`<span class="flag" aria-hidden="true">${FL[o]}</span>`:"";
 const NOTAS=["Frutos rojos","Cítrico","Fruta tropical","Fruta de hueso","Floral","Té","Chocolate","Cacao","Caramelo","Miel","Manzana y pera","Uva y vino","Panela","Frutos secos","Vainilla","Especias","Herbal","Madera y tabaco","Mermelada","Cereal y pan"];
 const $=id=>document.getElementById(id);
@@ -163,12 +164,12 @@ r.sort((a,b)=>iaIds?iaIds.indexOf(a.i)-iaIds.indexOf(b.i):k==="pa"?(a.p250??a.pr
 $("count").textContent=r.length+(r.length===1?" café encontrado":" cafés encontrados");
 const tot=r.length;r=r.slice(0,show);$("more").style.display=tot>show?"block":"none";$("grid").innerHTML=r.length?r.map(d=>`<article class="cafe ${d.s?"":"off"}">
 ${d.img?`<img class="foto" src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" width="400" height="300" onerror="this.remove()">`:""}
-<div><h2>${esc(d.n)}</h2><p class="who">${d.logo?`<img class="logo-t" src="${esc(d.logo)}" alt="" loading="lazy" onerror="this.remove()">`:""}${esc(d.r)}, ${esc(d.c)}${d.g?` · <span class="gr" title="Valoración en Google Maps">★ ${d.g.toFixed(1).replace(".",",")} en Google${d.gn?` <small>(${d.gn})</small>`:""}</span>`:""}</p></div>
+<div><h2>${esc(d.n)}</h2><p class="who">${d.logo?`<img class="logo-t" src="${esc(d.logo)}" alt="" loading="lazy" onerror="this.remove()">`:""}${esc(d.r)}, ${esc(d.c)}${MOSTRAR_GOOGLE&&d.g?` · <span class="gr" title="Valoración en Google Maps">★ ${d.g.toFixed(1).replace(".",",")} en Google${d.gn?` <small>(${d.gn})</small>`:""}</span>`:""}</p></div>
 <p class="notes">${(d.nt||[]).map(esc).join(", ")}</p>
 <div class="meta">${d.o?`<span class="tag">${flag(d.o)}${esc(d.o)}</span>`:""}${d.p?`<span class="tag">${esc(d.p)}</span>`:""}${(d.mt||(d.t?[d.t]:[])).slice(0,3).map(x=>`<span class="tag">${esc(x)}</span>`).join("")}${d.sca?`<span class="tag sca" title="Puntuación SCA">SCA ${d.sca}</span>`:""}</div>
 ${d.rt!=null?`<div class="rt">★ ${d.rt.toFixed(1)} <span>valoración</span></div>`:""}
 <p class="ship ${d.sh!=null?"ok":""}">${d.sh!=null?"Envío gratis desde "+d.sh+" €":"Envío con coste"}${d.mn?" · Pedido mínimo "+d.mn+" €":""}${d.s?"":" · Agotado ahora"}</p>
-<div class="foot"><div class="price">${eur(d.pr)} €<small>${d.g?" / "+d.g+" g":""}</small>${d.p250&&d.g!==250?`<span class="p250">≈ ${eur(d.p250)} € / 250 g</span>`:""}</div>
+<div class="foot"><div class="price">${eur(d.pr)} €<small>${d.g?" / "+d.g+" g":""}</small>${d.p250&&d.g!==250?`<span class="p250">≈ ${eur(d.p250)} € / 250 g</span>`:""}${d.manual&&d.act?`<span class="p250">Precio revisado el ${new Date(d.act).toLocaleDateString("es-ES")}</span>`:""}</div>
 <a class="buy" href="${esc(d.aff_url||link(d))}" target="_blank" rel="${d.af?"sponsored ":""}noopener">${d.s?"Me lo llevo":"Agotado"}</a></div></article>`).join("")
 :`<div class="empty" style="grid-column:1/-1">Ni un solo grano con esos filtros. Quita alguno, que no somos tan exigentes. <button class="reset" onclick="resetAll()">Limpiar filtros</button></div>`}
 
