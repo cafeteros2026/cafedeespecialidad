@@ -1,12 +1,11 @@
 {
- "fecha": "2026-10-07T10:01:47",
- "total_cafes": 1937,
+ "fecha": "2026-10-07T11:12:52",
+ "total_cafes": 2546,
  "total_tostadores": 128,
  "sin_datos": [
   "1000 Cups Café",
   "Afortunato",
   "Astro Café Roasters",
-  "BO&GO Specialty Coffee",
   "Café Angélica",
   "Cafés Moreno",
   "Cafés Plaza del Castillo",
@@ -25,7 +24,6 @@
   "Nenit Coffee Roasters",
   "Nica Café",
   "Nobil Coffee Roasters",
-  "Root Café",
-  "Soycafetera"
+  "Root Café"
  ]
 }
