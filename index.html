@@ -387,7 +387,6 @@
     // Paleta de colores para asignar dinámicamente según el origen
     const COLORS = ['#3ABEFF', '#FFD166', '#FF5A36', '#C8963E'];
 
-const COLORS = ['#3ABEFF', '#FFD166', '#FF5A36', '#C8963E'];
 
 // Mapa estricto de orígenes y banderas
 const FLAGS = {
@@ -441,9 +440,11 @@ function obtenerOrigenesLimpios(textoOrigen) {
           // Asignar colores aleatorios del diseño pop art para mantener la estética
           const mainColor = COLORS[i % COLORS.length];
           const secondaryColor = COLORS[(i + 1) % COLORS.length];
+3. Mover el origen a la descripción (HTML dinámico)
 
-          const article = document.createElement('article');
-          article.className = 'coffee-card';
+Sustituye el bloque donde se parsean y generan los artículos (article.innerHTML) por el siguiente código. Esto elimina la etiqueta gigante del header de la imagen y coloca el origen con su bandera dentro de los tags de la descripción, descartando cualquier texto basura:
+JavaScript
+
           const origenesReales = obtenerOrigenesLimpios(cols[5]);
           let tagsOrigen = '';
           
