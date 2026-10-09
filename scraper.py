@@ -5,7 +5,7 @@ Orden de métodos por tostador: Shopify -> WooCommerce -> HTML genérico (Presta
 Columnas opcionales en el CSV: Affiliate_Template (enlace de red de afiliación con {url}), URL_Catalogo (página de listado de cafés, recomendada para
 tiendas que no son Shopify/Woo), Envio_Gratis, Pedido_Minimo.
 """
-import csv, json, os, re, threading, time, unicodedata, urllib.parse as up
+import csv, glob, json, os, re, threading, time, unicodedata, urllib.parse as up
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 import requests
@@ -18,7 +18,10 @@ try:
 except ImportError: pass
 
 H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8", "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8"}
+     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8"}
+# Pedir JSON en páginas HTML hace que PrestaShop (y similares) devuelvan un cascarón JS sin enlaces de producto.
+H_HTML = {**H, "Accept": "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8"}
+H_JSON = {**H, "Accept": "application/json,text/javascript;q=0.9,*/*;q=0.8"}
 RECHAZ = []
 LOC = threading.local()          # rechazos por tostador (cada hilo lleva los suyos)
 VERBOSO = False
@@ -60,7 +63,7 @@ def antibot(r):
 def get(u, j=False):
     log('  GET', u)
     for i in range(3):
-        r = requests.get(u, headers=H, timeout=20)
+        r = requests.get(u, headers=(H_JSON if j else H_HTML), timeout=20)
         bloqueo = antibot(r)
         if not bloqueo and j and r.status_code == 202: bloqueo = "antibot"
         if bloqueo: raise Exception(f"BLOQUEADO por {bloqueo} (HTTP {r.status_code}): la web no admite lectura automática")
@@ -84,7 +87,7 @@ def leer_csv(p="lista_tostadores.csv"):
                 "sh": r.get("Envio_Gratis") or "", "mn": r.get("Pedido_Minimo") or "",
                 "param": (r.get("Affiliate_Param") or "").strip() or "ref", "code": (r.get("Affiliate_Code") or "").strip(),
                 "aff": (r.get("Affiliate_URL") or "").strip(), "tpl": (r.get("Affiliate_Template") or "").strip(),
-                "excl": [w.strip().lower() for w in (r.get("Excluir") or "").split(",") if w.strip()]})
+                "logo": (r.get("Logo") or "").strip(), "excl": [w.strip().lower() for w in (r.get("Excluir") or "").split(",") if w.strip()]})
     return out
 
 def num(v):
@@ -92,7 +95,7 @@ def num(v):
     except Exception: return None
 
 def no_cafe(s): return any(x in s.lower() for x in NO)
-NEG = re.compile(r"\b(?:molinill|grinder|m[aá]quina|cafeter|accesorio|merch|camiseta|gorra|sudadera|tote|regalo|gift|tarjeta|curso|formaci|taller|suscrip|pack|kit\b|b[aá]scula|balanza|jarra|tetera|hervidor|limpi|descalcific|tamper|portafiltro|dripper|chemex|aeropress|c[aá]psula|taza(?! de excelencia)|vaso|termo|botella|bote\b|prueba|test\b|comprobaci|tools|equipamiento|herramienta|libro|e-?book|delantal|pegatina|p[oó]ster|mug\b|filtros? de papel|papel|nuez|nueces|pipas|pasas|cacahuete|almendra|avellana|pistacho|anacardo|d[aá]til|higo|orejones|frutos secos|snack|galleta|turr[oó]n|aceite|cerveza|infusi|tisana|rooibos|matcha|chai|t[eé] (?:verde|negro|rojo|blanco)|vino|licor|tableta|bomb[oó]n|bizcocho|leche|condensad|dulce de|dulces\b|crema de|sirope|jarabe|helado|cookie|soluble|salsa|mermelada|chocolate|cacao|caf[eé] verde|green coffee|sin tostar|bono|entrada|experiencia|hario|kalita|fellow|baratza|comandante|timemore|bialetti|marzocco|cafec|origami|kinto|stanley|espro|acaia|moccamaster|sage\b|orea|subminimal|descatalogado|env[ií]os?|tarifa|plan renove|combo|bundle|box\b|sourdough|^\s*v60\s*$|^\s*molino\b|tostadora|prensa\b|cuchara|agitad|exfoliante|jab[oó]n|hojicha|sencha|genmaicha|oolong|pu-?erh|yerba|^\s*(?:az[uú]car|panela)\b|mascobado|review|opini[oó]n|cecotec|delonghi|de'longhi|krups|philips|nespresso|dolce gusto|recipiente|cristal|tapa\b|vidrio|subscription|b2b|wholesale|mayorista|kruve|trinity|pan|tostadores)", re.I)
+NEG = re.compile(r"\b(?:molinill|grinder|m[aá]quina|cafeter|accesorio|merch|camiseta|gorra|sudadera|tote|regalo|gift|tarjeta|curso|formaci|taller|suscrip|pack|kit\b|b[aá]scula|balanza|jarra|tetera|hervidor|limpi|descalcific|tamper|portafiltro|dripper|chemex|aeropress|c[aá]psula|taza(?! de excelencia)|vaso|termo|botella|bote\b|prueba|test\b|comprobaci|tools|equipamiento|herramienta|libro|e-?book|delantal|pegatina|p[oó]ster|mug\b|filtros? de papel|papel|nuez|nueces|pipas|pasas|cacahuete|almendra|avellana|pistacho|anacardo|d[aá]til|higo|orejones|frutos secos|snack|galleta|turr[oó]n|aceite|cerveza|infusi|tisana|rooibos|matcha|chai|t[eé] (?:verde|negro|rojo|blanco)|vino|licor|tableta|bomb[oó]n|bizcocho|leche|condensad|dulce de|dulces\b|crema de|sirope|jarabe|helado|cookie|soluble|salsa|mermelada|chocolate|cacao|caf[eé] verde|green coffee|sin tostar|bono|entrada|experiencia|hario|kalita|fellow|baratza|comandante|timemore|bialetti|marzocco|cafec|origami|kinto|stanley|espro|acaia|moccamaster|sage\b|orea|subminimal|descatalogado|env[ií]os?|tarifa|plan renove|combo|bundle|box\b|sourdough|^\s*v60\s*$|^\s*molino\b|tostadora|prensa\b|cuchara|agitad|exfoliante|jab[oó]n|hojicha|sencha|genmaicha|oolong|pu-?erh|yerba|^\s*(?:az[uú]car|panela)\b|mascobado|review|opini[oó]n|cecotec|delonghi|de'longhi|krups|philips|nespresso|dolce gusto|recipiente|cristal|tapa\b|vidrio|subscription|b2b|wholesale|mayorista|kruve|trinity|champi|setas?\b|bocadillo|bocata|tostada\b|croissant|brunch|desayuno|men[uú]\b|carta\b|tarta|pastel|pan\b|sandwich|ensalada|tortilla|huevos?|zumo|smoothie|batido|c[oó]ctel|cocktail|whisky|vermut|hamburguesa|pizza|queso|jam[oó]n|embutido|aceitunas|tapas?\b|raci[oó]n|refresco|cortado|capuchino|cappuccino|americano\b|carajillo|macchiato|con leche|workshop|masterclass|clases? de|evento|training|certificaci|^\s*cata\b|cata de|cata guiada)", re.I)
 NEG_URL = re.compile(r"\b(?:molinill|m[aá]quina|cafeter|accesorio|camiseta|gorra|tote|regalo|gift|curso|taller|suscrip|pack|capsula|c[aá]psula|taza(?!-de-excelencia)|termo|dripper|aeropress|chemex|filtros?-de-papel|molino|tostadora)", re.I)
 NEG_CAT = re.compile(r"\b(?:accesorios?|merch|cafeteras?|molinillos?|m[aá]quinas?|cursos?|talleres?|tazas?|regalos?|packs?|suscripci|c[aá]psulas?|infusion|snacks?|frutos secos|libros?|ropa|equipamiento|herramientas|bebidas|dulces|reposter)", re.I)
 VARIEDAD = re.compile(r"geisha|gesha|bourbon|borb[oó]n|caturra|catua[ií]|typica|pacamara|sidra|sl-?28|sl-?34|castillo|heirloom|ruiru|batian|catimor|wush|laurina|pacas|villa sarchi|obata|maragogipe|mundo novo|peaberry|supremo|excelso|honey|lavado|washed|anaer|\blote\b|\bAA\b|\bAB\b", re.I)
@@ -100,7 +103,7 @@ POS = re.compile(r"caf[eé]\b|coffee|grano|espresso|origen|tueste|blend|especial
 
 CAFE_TXT = re.compile(r"tueste|ar[aá]bica|espresso|molido|\bgranos?\b|cafetera|altitud|\bcata\b|finca|caf[eé] de especialidad", re.I)
 
-def es_cafe(nombre, cab, desc, tiene_peso, precio, confiado=False, ev_extra=False):
+def es_cafe(nombre, cab, desc, tiene_peso, precio, confiado=False, ev_extra=False, estricto=False):
     """True = café; False = descartar. Si es dudoso (sin pruebas claras) devuelve True y marca LOC.dud;
     luego se decide por el rango de precios de los cafés seguros de ese tostador."""
     LOC.dud = False
@@ -109,6 +112,7 @@ def es_cafe(nombre, cab, desc, tiene_peso, precio, confiado=False, ev_extra=Fals
     if NEG.search(nombre): return no("accesorio/alimento/merch")
     if NEG_CAT.search(cab) and not POS.search(f"{nombre} {cab}"): return no("categoría que no es café")
     if precio > 60 and not tiene_peso: return no("precio alto sin gramos")
+    if estricto and not (confiado or ev_extra or tiene_peso): return no("sin señales de café en grano (¿carta/otro producto?)")
     if confiado or ev_extra or POS.search(f"{nombre} {cab}"): return True
     if pais(nombre, "") or VARIEDAD.search(nombre): return True      # "Colombia Huila", "Kiringa AA", "Geisha"
     ev = CAFE_TXT.search(desc) or (pais(nombre, desc) and re.search(r"notas|tueste|cata", desc, re.I))
@@ -159,6 +163,50 @@ def afiliado(u, t):
     q["utm_source"] = ["granos"]
     return up.urlunparse(up.urlparse(u)._replace(query=up.urlencode(q, doseq=True)))
 
+LAB = {"origen": "origen", "país": "origen", "pais": "origen", "origin": "origen", "región": "region", "region": "region",
+ "finca": "finca", "farm": "finca", "estate": "finca", "productor": "productor", "productora": "productor", "producer": "productor",
+ "varietal": "varietal", "variedad": "varietal", "variedades": "varietal", "varietales": "varietal", "variety": "varietal",
+ "beneficiado": "proceso", "proceso": "proceso", "process": "proceso", "método de proceso": "proceso", "metodo de proceso": "proceso",
+ "altitud": "altitud", "altura": "altitud", "altitude": "altitud",
+ "notas de cata": "notas", "notas": "notas", "perfil de taza": "notas", "perfil": "notas", "tasting notes": "notas", "flavor notes": "notas", "notas de sabor": "notas",
+ "puntuación": "sca", "puntuacion": "sca", "sca": "sca", "score": "sca", "puntos": "sca"}
+LABN = {sa(k): v for k, v in LAB.items()}
+ETIQ = "|".join(re.escape(x) for x in sorted(LAB, key=len, reverse=True))
+
+def detalles_texto(txt, dos_puntos=True):
+    """Pares 'Etiqueta: valor' dentro de un texto (descripciones). Descarta valores largos (prosa)."""
+    d, sep = {}, (r"\s*:\s*" if dos_puntos else r"\s+")
+    for m in re.finditer(rf"(?<![\w])({ETIQ}){sep}(.+?)(?=(?<![\w])(?:{ETIQ}){sep}|$)", txt or "", re.I | re.S):
+        campo, v = LAB[m.group(1).lower()], norm(m.group(2)).strip(" .;,-–")
+        if v and len(v) <= (220 if campo == "notas" else 90): d.setdefault(campo, v)
+    return d
+
+def detalles_html(soup):
+    """Ficha técnica de una página: <dt>/<dd>, tablas <th>/<td>, bloque 'Detalles del producto' o 'Etiqueta: valor'."""
+    d = {}
+    def add(k, v):
+        campo = LABN.get(sa(k).strip(" :*"))
+        if campo and norm(v) and campo not in d: d[campo] = norm(v)
+    for dt in soup.find_all("dt"):
+        dd = dt.find_next_sibling("dd")
+        if dd: add(dt.get_text(), dd.get_text())
+    for tr in soup.find_all("tr"):
+        th, td = tr.find("th"), tr.find("td")
+        if th and td: add(th.get_text(), td.get_text())
+    texto_p = norm(soup.get_text(" ", strip=True))
+    m = re.search(r"(?:Detalles del producto|Ficha t[eé]cnica|Informaci[oó]n adicional|Caracter[ií]sticas)(.{0,1500}?)(?:Te recomendamos|Productos relacionados|Valoraciones|Rese[ñn]as|$)", texto_p, re.I)
+    for k, v in ({**detalles_texto(texto_p[:8000]), **(detalles_texto(m.group(1), False) if m else {})}).items(): d.setdefault(k, v)
+    return d
+
+def limpiar_proceso(p):
+    p = re.sub(r"\s*\bco[cs]echa\s*(?:de\s*)?\d{4}\b", "", p or "", flags=re.I)
+    return p.strip(" .;,-–")
+
+def sca_det(det, txt):
+    m = re.search(r"\d{2}(?:[.,]\d{1,2})?", det.get("sca", "") or "")
+    if m and 70 <= float(m.group(0).replace(",", ".")) <= 100: return float(m.group(0).replace(",", "."))
+    return sca(txt)
+
 PESOS = [100, 125, 150, 200, 227, 250, 340, 350, 400, 454, 500, 750, 1000, 2000, 2500, 5000]
 
 def peso_envio(gr):
@@ -183,15 +231,19 @@ def gramos_estandar(txt):
         if int(v) in STD: return int(v)
     return None
 
-def ficha(t, n, u, img, txt, precio, stock, g=None, gsrc=""):
+def ficha(t, n, u, img, txt, precio, stock, g=None, gsrc="", det=None):
+    det = det or {}
     pr = round(precio, 2)
     if g and SOLO.search(n) and gsrc not in ("título", "variante", "descripción", "manual"): g = None   # monodosis: el peso de envío no vale
     tl = txt.lower()
     return {"n": norm(n), "r": t["nombre"], "c": t["ciudad"], "u": u, "aff_url": afiliado(u, t), "img": img or "",
         "mt": (lambda m: [] if len(m) >= 4 else m)(hallar(METODOS, txt)),
-        "o": pais(n, txt), "p": (hallar(PROC, txt) or [""])[0], "nt": hallar(NOTAS, txt), "pr": pr, "g": g, "gsrc": gsrc if g else "", "p250": round(precio * 250 / g, 2) if g else None,
+        "o": (pais(det.get("origen", ""), "") or pais(n, txt) or det.get("origen", "")), "p": limpiar_proceso(det.get("proceso")) or (hallar(PROC, txt) or [""])[0],
+        "nt": hallar(NOTAS, det["notas"]) if det.get("notas") else hallar(NOTAS, txt), "notas": det.get("notas", ""),
+        "reg": det.get("region", ""), "finca": det.get("finca", ""), "prod": det.get("productor", ""), "var": det.get("varietal", ""), "alt": det.get("altitud", ""),
+        "act": date.today().isoformat(), "logo": t.get("logo", ""), "pr": pr, "g": g, "gsrc": gsrc if g else "", "p250": round(precio * 250 / g, 2) if g else None,
         "af": bool(t["aff"] or t["tpl"] or t["code"]), "s": bool(stock),
-        "sca": sca(txt), "rt": None, "sh": num(t["sh"]), "mn": num(t["mn"]) or 0, "_d": getattr(LOC, "dud", False)}
+        "sca": sca_det(det, txt), "rt": None, "sh": num(t["sh"]), "mn": num(t["mn"]) or 0, "_d": getattr(LOC, "dud", False)}
 
 def norm(s): return re.sub(r"\s+", " ", unescape(s or "")).strip()
 def texto(h): return norm(BeautifulSoup(h or "", "html.parser").get_text(" "))
@@ -222,8 +274,9 @@ def shopify(t):
                 clave = abs(g - 250) if g else 99999
                 if mejor is None or clave < mejor[3]: mejor = (pr, g, src, clave)
             if not mejor or not es_cafe(p["title"], f"{p.get('product_type','')} {' '.join(tags)}", texto(p.get('body_html')), pesos, mejor[0]): continue
+            det_s = detalles_texto(texto(p.get("body_html")))
             out.append(ficha(t, p["title"], f"{t['org']}/products/{p['handle']}", p["images"][0]["src"] if p.get("images") else "",
-                f"{cab} {texto(p.get('body_html'))} {' '.join(v.get('title','') for v in vs)}", mejor[0], any(v.get("available") for v in vs), mejor[1], mejor[2]))
+                f"{cab} {texto(p.get('body_html'))} {' '.join(v.get('title','') for v in vs)}", mejor[0], any(v.get("available") for v in vs), mejor[1], mejor[2], det=det_s))
         time.sleep(1)
     return out
 
@@ -261,30 +314,69 @@ def woo(t):
                     if vm: precio, g_var = vm[0], vm[1]
                 except Exception: pass
             if not es_cafe(p["name"], cats, desc, bool(gramos(p["name"]) or gramos(desc) or gramos(attr)), precio): continue
+            det_w = detalles_texto(desc)
+            for a in p.get("attributes", []):
+                k = LABN.get(sa(a.get("name", "")))
+                if k and a.get("terms"): det_w.setdefault(k, ", ".join(x["name"] for x in a["terms"]))
             out.append(ficha(t, p["name"], p["permalink"], p["images"][0]["src"] if p.get("images") else "",
                 f"{p['name']} {cats} {attr} {desc}",
                 precio, p.get("is_in_stock", True),
-                g_var or gramos(p["name"]) or g_attr or gramos_texto(desc) or g_peso or gramos_estandar(desc), "woo"))
+                g_var or gramos(p["name"]) or g_attr or gramos_texto(desc) or g_peso or gramos_estandar(desc), "woo", det=det_w))
         if len(d) < 100: break
         time.sleep(1)
     return out
 
-RUTAS = ["/tienda", "/shop", "/productos", "/cafe", "/cafes", "/collections/all", "/tienda-online"]
+RUTAS = ["/tienda", "/shop", "/productos", "/cafe", "/cafes", "/collections/all", "/tienda-online", "/tienda.html", "/shop.html"]
+MEDIA = re.compile(r"\.(?:mp4|webm|jpe?g|png|gif|webp|pdf|css|js|ico|svg|xml|mp3)$", re.I)
 
 def es_producto(path):   # PrestaShop /es/cafetazos/207-1700-x  |  Woo /producto/x  |  Shopify /products/x
+    path = path.split("#")[0].split("?")[0]
     s = path.strip("/").split("/")
-    if re.fullmatch(r"\d+-[\w-]+(\.html)?", s[-1]) and any(not re.fullmatch(r"[a-z]{2}", x) for x in s[:-1]): return True
+    last = (s[-1] if s else "").lower()
+    if MEDIA.search(last): return False
+    if "content" in [x.lower() for x in s]: return False   # páginas CMS de PrestaShop
+    if re.fullmatch(r"\d+-[\w-]+(\.html)?", last) and any(not re.fullmatch(r"[a-z]{2}", x) for x in s[:-1]): return True
     if len(s) >= 3 and s[-3] == "product": return True      # Square Online: /product/slug/ID
+    if last.startswith("producto-") and last not in ("productos", "producto"): return True  # /producto-cafe-azzurro/
     return len(s) >= 2 and s[-2] in ("producto", "productos", "product", "products", "product-page", "p", "tienda", "shop")
 
-EXCL = re.compile(r"cart|carrito|checkout|cuenta|account|login|contact|blog|politica|aviso|cookies|envios|condiciones|faq|nosotros|about|privacidad", re.I)
+EXCL = re.compile(r"cart|carrito|checkout|cuenta|account|login|contact|blog|politica|aviso|cookies|envios|condiciones|faq|nosotros|about|privacidad|carta|menu|men[uú]|desayun|brunch|evento|reserva|curso|taller|formacion|experienc|donde|noticias|galeria|trabaja|empleo", re.I)
+
+def limpia_href(h):
+    """Quita escapes de JSON/JS (\\/, \\") para poder usar el enlace."""
+    h = unescape(h or "").strip().strip("\\").strip('"').strip("'")
+    h = h.replace("\\/", "/").replace("\\u002f", "/")
+    return h.split("#")[0].split("?")[0].strip()
 
 def enlaces_crudos(html, base, org, fn):
     """Enlaces a producto aunque estén dentro de JSON/JS (comillas escapadas)."""
     res = []
     for h in re.findall(r'href=\\?["\']([^"\'\\\s>]+)', html):
-        u = up.urljoin(base, h.replace("\\/", "/")).split("#")[0].split("?")[0]; pu = up.urlparse(u)
+        u = up.urljoin(base, limpia_href(h)); pu = up.urlparse(u)
         if dominio(pu.netloc) == dominio(up.urlparse(org).netloc) and fn(pu.path) and u not in res: res.append(u)
+    for raw in re.findall(r"https?:\\?/\\?/[^\s\"'<>]+", html):
+        u = limpia_href(raw); pu = up.urlparse(u)
+        if dominio(pu.netloc) == dominio(up.urlparse(org).netloc) and fn(pu.path) and u not in res: res.append(u)
+    return res
+
+def enlaces_jsonld(soup, base, org, fn):
+    """ItemList / Product en datos estructurados (Root Café, listados PrestaShop)."""
+    res = []
+    for s in soup.find_all("script", type="application/ld+json"):
+        try: d = json.loads(s.string or "")
+        except Exception: continue
+        items = d if isinstance(d, list) else d.get("@graph", [d])
+        cola = list(items)
+        while cola:
+            it = cola.pop(0)
+            if not isinstance(it, dict): continue
+            if isinstance(it.get("itemListElement"), list): cola.extend(it["itemListElement"])
+            inner = it.get("item") if isinstance(it.get("item"), dict) else None
+            if inner: cola.append(inner)
+            u = it.get("url") or it.get("@id") or (inner or {}).get("url")
+            if not u: continue
+            u = up.urljoin(base, limpia_href(str(u))); pu = up.urlparse(u)
+            if dominio(pu.netloc) == dominio(up.urlparse(org).netloc) and fn(pu.path) and u not in res: res.append(u)
     return res
 
 def enlaces_tarjeta(soup, base, org):
@@ -327,16 +419,46 @@ def dominio(h): return ".".join(h.split(".")[-2:])
 def enlaces(soup, base, org, fn):
     res = []
     for a in soup.find_all("a", href=True):
-        if re.search(r'[\\"\'{}<>\s]', a["href"].strip()): continue      # enlaces rotos/escapados
-        u = up.urljoin(base, a["href"]).split("#")[0].split("?")[0]
+        h = limpia_href(a["href"])
+        if not h or re.search(r'[{}<>\s]', h): continue      # enlaces rotos
+        u = up.urljoin(base, h)
         pu = up.urlparse(u)
         if dominio(pu.netloc) == dominio(up.urlparse(org).netloc) and fn(pu.path) and u not in res: res.append(u)
     return res
+
+CARRITO = re.compile(r"a[ñn]adir (?:al|a la) (?:carrito|cesta|pedido)|agregar al carrito|add to (?:cart|bag|basket)|comprar ahora|buy now", re.I)
+
+def es_ficha(soup, prod, meta):
+    """Ficha de producto: datos estructurados de producto, og:type product, microdatos o botón de compra."""
+    if prod or meta("og:type").lower() in ("product", "og:product", "product.item") or meta("product:price:amount"): return True
+    if soup.find(attrs={"itemtype": re.compile(r"schema\.org/Product", re.I)}): return True
+    for e in soup.find_all(["button", "a", "input"]):
+        txt = e.get_text(" ", strip=True) or e.get("value", "") or e.get("aria-label", "")
+        if txt and len(txt) < 60 and CARRITO.search(txt): return True
+    return False
 
 def limpiar_nombre(n):
     n = re.split(r"\s[—–|]\s", n)[0].strip()
     n = re.sub(r"^caf[eé]s? de especialidad\s*[:\-–]?\s*", "", n, flags=re.I).strip() or n
     return n[:1].upper() + n[1:] if n and n[0].islower() else n
+
+FRAG = {}
+
+def peso_pagina(ptxt):
+    m = re.search(r"\bPeso[\s*:]*(\d+(?:[.,]\d+)?\s?(?:kg|g|gr|gramos?))\b", ptxt or "", re.I)
+    return gramos(m.group(1)) if m else None
+
+def enlaces_categoria(soup, base, cat):
+    """Como el spider de 1000 Cups: enlaces cuya ruta contiene el nombre de la categoría (p. ej. /cafetazos/...)."""
+    slug = re.sub(r"^\d+-", "", up.urlparse(cat).path.rstrip("/").split("/")[-1])
+    res = []
+    if not slug: return res
+    for a in soup.find_all("a", href=True):
+        if re.search(r'[\\"\'{}<>\s]', a["href"].strip()): continue
+        limpia, frag = up.urldefrag(up.urljoin(base, a["href"])); limpia = limpia.split("?")[0]
+        if f"/{slug}/" in up.urlparse(limpia).path and limpia.rstrip("/") != cat.rstrip("/") and limpia not in res:
+            res.append(limpia); FRAG.setdefault(limpia, frag)
+    return res
 
 def pagina(t, u, confiar=False):
     soup = BeautifulSoup(get(u), "html.parser"); prod = None
@@ -346,6 +468,7 @@ def pagina(t, u, confiar=False):
         for it in (d if isinstance(d, list) else d.get("@graph", [d])):
             if isinstance(it, dict) and "Product" in str(it.get("@type")): prod = it
     meta = lambda k: (soup.find("meta", property=k) or soup.find("meta", attrs={"name": k}) or {}).get("content", "")
+    if not es_ficha(soup, prod, meta): return None
     n = norm((prod or {}).get("name") or meta("og:title") or (soup.h1.get_text() if soup.h1 else ""))
     of = (prod or {}).get("offers") or {}
     of = of[0] if isinstance(of, list) and of else of if isinstance(of, dict) else {}
@@ -357,10 +480,11 @@ def pagina(t, u, confiar=False):
     img = img[0] if isinstance(img, list) and img else img.get("url", "") if isinstance(img, dict) else img
     desc = " ".join(e.get_text(" ") for e in soup.select("[itemprop=description], .product-description, #description, .product-information"))
     txt = f"{n_raw} {(prod or {}).get('description','')} {desc} {meta('og:description')}"
-    ev_extra = len(re.findall(r"altitud|msnm|masl|tueste|variedad|notas? de cata|proceso|finca|cosecha", soup.get_text(" ", strip=True), re.I)) >= 2
-    if not es_cafe(n_raw, up.urlparse(u).path, f"{(prod or {}).get('description','')} {desc} {meta('og:description')}", bool(gramos(n) or gramos(desc)), pr, confiar, ev_extra): return None
+    ev_extra = len(re.findall(r"altitud|altitude|msnm|masl|tueste|roast level|variedad|variety|notas? de cata|tasting notes|proceso|finca|farm|cosecha|harvest", soup.get_text(" ", strip=True), re.I)) >= 2
+    if not es_cafe(n_raw, up.urlparse(u).path, f"{(prod or {}).get('description','')} {desc} {meta('og:description')}", bool(gramos(n) or gramos(desc)), pr, confiar, ev_extra, True): return None
     stock = "OutOfStock" not in str(of.get("availability", ""))
-    return ficha(t, n, u, img if isinstance(img, str) else "", txt, pr, stock, gramos(n) or gramos_texto(desc), "página")
+    if soup.select_one(".product-unavailable, .out-of-stock, .add-to-cart[disabled]"): stock = False
+    return ficha(t, n, u, img if isinstance(img, str) else "", txt, pr, stock, gramos(n) or gramos_texto(desc) or peso_pagina(norm(soup.get_text(" ", strip=True))) or gramos(FRAG.get(u, "").replace("-", " ")), "página", det=detalles_html(soup))
 
 def html_generico(t):
     confiar = bool(t["cat"])
@@ -371,9 +495,9 @@ def html_generico(t):
                if re.search(r"caf|coffee|grano|tienda|shop|origen|especial", l, re.I) and not NEG_URL.search(up.urlparse(l).path)]
         tiendas = []
         for a in home.find_all("a", href=True):
-            u = up.urljoin(t["web"], a["href"]).split("#")[0].split("?")[0]; pu = up.urlparse(u)
+            u = up.urljoin(t["web"], limpia_href(a["href"])); pu = up.urlparse(u)
             if (dominio(pu.netloc) != dominio(up.urlparse(t["org"]).netloc) or u in tiendas or u.rstrip("/") == t["web"].rstrip("/")
-                    or EXCL.search(pu.path) or NEG_URL.search(pu.path) or es_producto(pu.path)): continue
+                    or EXCL.search(pu.path) or NEG_URL.search(pu.path) or es_producto(pu.path) or MEDIA.search(pu.path)): continue
             if (re.search(r"tienda|shop|comprar|caf[eé]s?\b|productos|botiga|store|todos", a.get_text(" ", strip=True), re.I)
                     or re.search(r"/(tienda|shop|productos?|store|comprar|cafes?|collections)[\w-]*(/|$)", pu.path, re.I)): tiendas.append(u)
         tiendas += [h for h in {up.urljoin(t["web"], a["href"]) for a in home.find_all("a", href=True)} if re.match(r"https?://(tienda|shop|store)\.", h)]
@@ -388,7 +512,7 @@ def html_generico(t):
             for u in cands:
                 try:
                     html = get(u); soup = BeautifulSoup(html, "html.parser")
-                    nuevos = [l for l in (enlaces(soup, u, t["org"], es_producto) or enlaces_crudos(html, u, t["org"], es_producto) or enlaces_tarjeta(soup, u, t["org"])) if l not in vistos]
+                    nuevos = [l for l in ((enlaces_categoria(soup, u, t["cat"]) if t["cat"] else []) or enlaces(soup, u, t["org"], es_producto) or enlaces_crudos(html, u, t["org"], es_producto) or enlaces_tarjeta(soup, u, t["org"])) if l not in vistos]
                     a = soup.find("a", rel="next") or soup.find("a", href=re.compile(r"[?&](?:offset|page)=\d"))
                     siguiente = up.urljoin(u, a["href"]) if a else None
                     if "squarespace" in html.lower():          # Squarespace ofrece el listado también en JSON
@@ -456,7 +580,7 @@ def huella(t):
 def estado(u, j=False):
     """Devuelve (resultado, texto): 'ok' o el motivo del fallo."""
     try:
-        r = requests.get(u, headers=H, timeout=15)
+        r = requests.get(u, headers=(H_JSON if j else H_HTML), timeout=15)
         if r.status_code != 200: return f"HTTP {r.status_code}", ""
         if "just a moment" in r.text[:3000].lower(): return "bloqueado (Cloudflare)", ""
         if j:
@@ -519,6 +643,52 @@ def intentar(t):
             if "BLOQUEADO" in str(e): return "bloqueado", [], err      # si bloquea, no insistir con otros métodos
     return "ninguno", [], err
 
+CACHE_DET = {}
+
+def cargar_cache():
+    global CACHE_DET
+    try: CACHE_DET = json.load(open("detalles_cache.json", encoding="utf-8"))
+    except Exception: CACHE_DET = {}
+
+def guardar_cache(vivas):
+    """Guarda solo las fichas de cafés que siguen existiendo (así el archivo no crece sin límite)."""
+    json.dump({u: e for u, e in CACHE_DET.items() if u in vivas}, open("detalles_cache.json", "w", encoding="utf-8"), ensure_ascii=False)
+
+def leer_ficha_pagina(u):
+    """Como el spider de 1000 Cups: abre la ficha del producto y lee su 'Detalles del producto'."""
+    soup = BeautifulSoup(get(u), "html.parser")
+    og = soup.find("meta", property="og:image")
+    return {"f": date.today().isoformat(), "d": detalles_html(soup), "g": peso_pagina(norm(soup.get_text(" ", strip=True))),
+            "img": (og.get("content", "") if og else "")}
+
+def aplicar_detalles(c, e):
+    det = e.get("d") or {}
+    if det.get("origen"): c["o"] = pais(det["origen"], "") or det["origen"]
+    if limpiar_proceso(det.get("proceso")): c["p"] = limpiar_proceso(det["proceso"])
+    if det.get("notas"): c["notas"] = det["notas"]; c["nt"] = hallar(NOTAS, det["notas"]) or c.get("nt", [])
+    v = sca_det(det, "")
+    if v: c["sca"] = v
+    for k, kk in (("reg", "region"), ("finca", "finca"), ("prod", "productor"), ("var", "varietal"), ("alt", "altitud")):
+        if det.get(kk): c[k] = det[kk]
+    if not c.get("g") and e.get("g"): c["g"], c["gsrc"], c["p250"] = e["g"], "página", round(c["pr"] * 250 / e["g"], 2)
+    if not c.get("img") and e.get("img"): c["img"] = e["img"]
+
+def enriquecer(t, cafes, max_paginas=120, dias=14):
+    """Para tiendas leídas por API (Shopify/Woo): completa cada café con los datos de su ficha. Precio y stock siguen
+    viniendo de la API; la ficha se relee cada 14 días y, mientras tanto, se usa la copia guardada."""
+    hoy, leidas = date.today(), 0
+    for c in cafes:
+        u = (c.get("u") or "").split("#")[0]
+        e = CACHE_DET.get(u)
+        caducada = not e or (hoy - date.fromisoformat(e["f"])).days >= dias
+        if caducada and u and leidas < max_paginas and not agotado(t):
+            try:
+                e = leer_ficha_pagina(u); CACHE_DET[u] = e; leidas += 1; time.sleep(0.4)
+            except Exception as ex:
+                if "BLOQUEADO" in str(ex): break
+        if e: aplicar_detalles(c, e)
+    return cafes
+
 def procesar(t):
     LOC.rech = []
     m, r, e = intentar(t)
@@ -528,9 +698,32 @@ def procesar(t):
             m2, r2, e2 = intentar(dict(t, org=org, web=org, cat=""))
             if r2: m, r, e = f"{m2}@{up.urlparse(org).netloc}", r2, ""; break
             e += f"[{org}] {e2}"
+    if r and (m.startswith("shopify") or m.startswith("woocommerce")):
+        t["limite"] = time.time() + 240; r = enriquecer(t, r)
     if t.get("excl"): r = [c for c in r if not any(w in c["n"].lower() for w in t["excl"])]
     t["_rech"] = list(LOC.rech)
     return m, r, e
+
+COLS_CSV = ["Tostador", "Ciudad", "Cafe", "Precio", "Gramos", "Origen", "Proceso", "Notas", "SCA", "URL", "Imagen", "Disponible",
+            "Actualizado", "Region", "Finca", "Productor", "Varietal", "Altitud", "Metodos", "NotasFiltro", "EnlaceCompra", "Afiliado",
+            "Logo", "EnvioGratisDesde", "PedidoMinimo", "FuenteGramos"]
+
+def fecha_es(iso):
+    try: return date.fromisoformat(iso).strftime("%d/%m/%Y")
+    except Exception: return ""
+
+def a_fila(c):
+    return [c.get("r"), c.get("c"), c.get("n"), c.get("pr"), c.get("g") or "", c.get("o") or "", c.get("p") or "",
+            c.get("notas") or ", ".join(c.get("nt") or []), c.get("sca") or "", c.get("u"), c.get("img") or "", 1 if c.get("s") else 0,
+            fecha_es(c.get("act")), c.get("reg") or "", c.get("finca") or "", c.get("prod") or "", c.get("var") or "", c.get("alt") or "",
+            "|".join(c.get("mt") or []), "|".join(c.get("nt") or []), c.get("aff_url") or c.get("u"), 1 if c.get("af") else 0,
+            c.get("logo") or "", c.get("sh") if c.get("sh") is not None else "", c.get("mn") or "", c.get("gsrc") or ""]
+
+def escribir_cafes_csv(total):
+    """Base de datos de la web: mismas columnas que cafes_manuales_1000cups.csv + columnas extra al final."""
+    with open("cafes.csv", "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f, delimiter=";"); w.writerow(COLS_CSV)
+        for c in total: w.writerow(a_fila(c))
 
 def exportar_csv():
     datos = json.load(open("cafes.json", encoding="utf-8"))
@@ -573,14 +766,9 @@ def google_ratings(tostadores):
 
 def cargar_manuales(tostadores):
     """Cafés que añades a mano (tiendas bloqueadas, sin web...): cafes_manuales.csv"""
-    if not os.path.exists("cafes_manuales.csv"): return []
-    raw = open("cafes_manuales.csv", "rb").read()
-    for enc in ("utf-8-sig", "cp1252"):
-        try: txt = raw.decode(enc); break
-        except UnicodeDecodeError: pass
-    lin = txt.splitlines(); d = ";" if lin[0].count(";") >= lin[0].count(",") else ","
     por = {t["nombre"].lower(): t for t in tostadores}; out = []
-    for r in csv.DictReader(lin, delimiter=d):
+    filas = [r for fichero in sorted(glob.glob("cafes_manuales*.csv")) for r in leer_tabla(fichero)]
+    for r in filas:
         n, nom, precio = (r.get("Cafe") or "").strip(), (r.get("Tostador") or "").strip(), num(r.get("Precio"))
         if not (n and nom and precio): continue
         t = por.get(nom.lower()) or {"nombre": nom, "ciudad": (r.get("Ciudad") or "").strip(), "sh": "", "mn": "", "param": "ref", "code": "", "aff": "", "tpl": "", "web": ""}
@@ -591,7 +779,10 @@ def cargar_manuales(tostadores):
         for k, col in (("o", "Origen"), ("p", "Proceso")):
             if (r.get(col) or "").strip(): f[k] = r[col].strip()
         if num(r.get("SCA")): f["sca"] = num(r.get("SCA"))
-        f.pop("_d", None); f["manual"] = True
+        f.pop("_d", None); f["manual"] = True; f["act"] = ""
+        f["notas"] = (r.get("Notas") or "").strip()
+        for k, col in (("reg", "Region"), ("finca", "Finca"), ("prod", "Productor"), ("var", "Varietal"), ("alt", "Altitud")):
+            f[k] = (r.get(col) or "").strip()
         a = parse_fecha(r.get("Actualizado"))
         if a: f["act"] = a.isoformat()
         out.append(f)
@@ -629,6 +820,7 @@ def aplicar_correcciones(total):
         if v("Nombre_Nuevo"): c["n"] = v("Nombre_Nuevo")
         if v("Origen"): c["o"] = v("Origen")
         if v("Proceso"): c["p"] = v("Proceso")
+        if v("Notas"): c["notas"] = v("Notas")
         if v("Notas"): c["nt"] = [x for x in (hallar(NOTAS, v("Notas")) or [y.strip() for y in re.split(r"[,;|]", v("Notas")) if y.strip()])]
         if num(v("SCA")): c["sca"] = num(v("SCA"))
         if num(v("Precio")): c["pr"] = round(num(v("Precio")), 2)
@@ -690,6 +882,7 @@ def main():
             print("   rechazados:", t.get("_rech", [])[:25])
         return
     viejo = json.load(open("cafes.json", encoding="utf-8")) if os.path.exists("cafes.json") else []
+    cargar_cache()
     with ThreadPoolExecutor(max_workers=8) as ex:
         res = list(ex.map(procesar, tostadores))
     total, informe = [], []
@@ -697,9 +890,11 @@ def main():
         pista = ""
         if not cafes:
             pista = huella(t)
-            cafes = [c for c in viejo if c.get("r") == t["nombre"] and (c.get("pr") or 0) > 0]; err = (err + " (se conservan datos anteriores)").strip()
+            cafes = [c for c in viejo if c.get("r") == t["nombre"] and (c.get("pr") or 0) > 0 and not c.get("manual")]; err = (err + " (se conservan datos anteriores)").strip()
         total += cafes
-        informe.append({"tostador": t["nombre"], "metodo": metodo, "cafes": len(cafes), "error": err, "pista": pista, "rechazados": " | ".join(t.get("_rech", [])[:8])})
+        informe.append({"tostador": t["nombre"], "metodo": metodo, "cafes": len(cafes), "con_origen": sum(1 for c in cafes if c.get("o")), "con_proceso": sum(1 for c in cafes if c.get("p")),
+                        "con_notas": sum(1 for c in cafes if c.get("notas") or c.get("nt")), "con_sca": sum(1 for c in cafes if c.get("sca")),
+                        "con_gramos": sum(1 for c in cafes if c.get("g")), "error": err, "pista": pista, "rechazados": " | ".join(t.get("_rech", [])[:8])})
         print(f"{metodo:12} {len(cafes):3}  {t['nombre']} {err}")
     total += cargar_manuales(tostadores)
     vistos_u, unicos = set(), []
@@ -708,17 +903,19 @@ def main():
         if k and k in vistos_u: continue
         vistos_u.add(k); unicos.append(c)
     total = aplicar_correcciones(unicos)
+    guardar_cache({(c.get("u") or "").split("#")[0] for c in total})
     gg = google_ratings(tostadores) if os.environ.get("USAR_GOOGLE") == "1" else {}   # desactivado por defecto (condiciones de Google)
     for c in total:
         x = gg.get(c["r"])
         if x and x.get("g"): c["g"], c["gn"] = x["g"], x.get("gn")
     for i, c in enumerate(total): c["i"] = i
     json.dump(total, open("cafes.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    escribir_cafes_csv(total)
     json.dump({"fecha": datetime.now().isoformat(timespec="seconds"), "total_cafes": len(total),
                "total_tostadores": len(tostadores), "sin_datos": [x["tostador"] for x in informe if x["cafes"] == 0]},
               open("estado.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     with open("informe.csv", "w", encoding="utf-8-sig", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["tostador", "metodo", "cafes", "error", "pista", "rechazados"], delimiter=";")
+        w = csv.DictWriter(f, fieldnames=["tostador", "metodo", "cafes", "con_origen", "con_proceso", "con_notas", "con_sca", "con_gramos", "error", "pista", "rechazados"], delimiter=";")
         w.writeheader(); w.writerows(informe)
     print(f"[ok] {len(total)} cafés de {len(tostadores)} tostadores")
 
