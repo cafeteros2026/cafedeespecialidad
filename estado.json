@@ -1,20 +1,14 @@
 {
- "fecha": "2026-10-09T10:20:47",
- "total_cafes": 2519,
+ "fecha": "2026-10-09T15:03:08",
+ "total_cafes": 2556,
  "total_tostadores": 128,
  "sin_datos": [
-  "1000 Cups Café",
-  "Afortunato",
   "Astro Café Roasters",
   "Café Angélica",
   "Cafés Moreno",
   "Cafés Plaza del Castillo",
-  "Cafés Salzillo",
   "Coffee Hackers",
-  "coffeeURBANroasters",
-  "Delsams Cafè",
   "El Tostado",
-  "Floco Coffee Roasters",
   "Geisha Coffee Roasters",
   "Guayota Coffee Roasters",
   "Jaleo Coffee Roasters",
@@ -23,7 +17,6 @@
   "Meza Coffee",
   "Nenit Coffee Roasters",
   "Nica Café",
-  "Nobil Coffee Roasters",
-  "Root Café"
+  "Nobil Coffee Roasters"
  ]
 }
