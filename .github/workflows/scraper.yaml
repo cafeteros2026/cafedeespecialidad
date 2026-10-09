@@ -32,5 +32,5 @@ jobs:
         run: |
           git config --global user.name "Granos Bot"
           git config --global user.email "bot@granos.app"
-          git add cafes.json estado.json informe.csv
+          git add cafes.csv cafes.json estado.json informe.csv detalles_cache.json
           git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-actualización de catálogo [skip ci]" && git push)
