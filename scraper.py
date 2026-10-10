@@ -29,7 +29,7 @@ def log(*a):
     if VERBOSO: print(*a, flush=True)
 def agotado(t): return time.time() > t.get("limite", 1e18)   # plazo máximo por tostador
 ORIG = ["Etiopía","Kenia","Colombia","Brasil","Guatemala","Costa Rica","Perú","Honduras","El Salvador","Panamá",
-        "Ruanda","Burundi","Uganda","Venezuela","Nicaragua","México","Indonesia","Tanzania","Bolivia","Ecuador","Yemen","India","Papúa Nueva Guinea","Tailandia","Jamaica","Vietnam","Laos","Malawi","Zambia","República Dominicana","Hawái","Congo","Filipinas","Timor Oriental","Myanmar"]
+        "Ruanda","Burundi","Uganda","Venezuela","Nicaragua","México","Indonesia","Tanzania","Bolivia","Ecuador","Yemen","India","Papúa Nueva Guinea","Tailandia","Jamaica","Vietnam","Laos","Malawi","Zambia","República Dominicana","Estados Unidos", "China", "Taiwán", "Nepal", "Camerún", "Costa de Marfil", "Mozambique", "Madagascar", "Haití", "Paraguay", "Santo Tomé y Príncipe","Congo","Filipinas","Timor Oriental","Myanmar"]
 PROC = {"Natural":["natural"],"Lavado":["lavado","washed"],"Honey":["honey"],"Anaeróbico":["anaer"]}
 NOTAS = {"Frutos rojos":["frutos rojos","frutas rojas","fresa","frambuesa","arándano","grosella","cereza","red fruit","berry","strawberry","raspberry","blueberry","cherry"],
  "Cítrico":["cítric","naranja","limón","lime","mandarina","bergamota","pomelo","citrus","orange","lemon","grapefruit","tangerine"],
@@ -146,14 +146,14 @@ ALIAS = {"Etiopía": ["ethiopia", "guji", "yirgacheffe", "sidamo", "sidama", "ha
  "Brasil": ["brazil", "cerrado", "minas gerais", "mogiana"], "Guatemala": ["huehuetenango", "atitlan"], "Costa Rica": ["tarrazu"],
  "Perú": ["peru", "cajamarca", "chanchamayo", "cusco"], "Honduras": ["marcala", "copan"], "Panamá": ["panama", "boquete"],
  "Ruanda": ["rwanda"], "Nicaragua": ["jinotega", "matagalpa"], "El Salvador": ["santa ana", "apaneca"], "México": ["mexico", "chiapas", "oaxaca"],
- "Indonesia": ["sumatra", "sulawesi", "java"], "Bolivia": ["caranavi"], "India": ["malabar"], "Papúa Nueva Guinea": ["papua", "papua new guinea", "png"], "Tailandia": ["thailand"], "Hawái": ["hawaii", "kona"], "República Dominicana": ["dominicana"], "Filipinas": ["philippines"], "Timor Oriental": ["timor"]}
+ "Indonesia": ["sumatra", "sulawesi", "java"], "Bolivia": ["caranavi"], "India": ["malabar"], "Papúa Nueva Guinea": ["papua", "papua new guinea"], "Tailandia": ["thailand"], "Estados Unidos": ["eeuu", "ee.uu", "estados unidos", "united states", "hawaii", "hawai", "kona"], "China": ["yunnan"], "Taiwán": ["taiwan"], "Camerún": ["cameroon"], "Costa de Marfil": ["ivory coast"], "Haití": ["haiti"], "República Dominicana": ["dominicana"], "Filipinas": ["philippines"], "Timor Oriental": ["timor"]}
 def sa(x): return "".join(c for c in unicodedata.normalize("NFD", (x or "").lower()) if unicodedata.category(c) != "Mn")
 def pais(titulo, txt):
     for src in (titulo, txt):
         e = sa(src)
         for p in ORIG:
             if any(re.search(r"\b" + re.escape(c) + r"\b", e) for c in [sa(p)] + ALIAS.get(p, [])): return p
-    return "Blend" if "blend" in titulo.lower() else ""
+    return ""      # "Blend", procesos o frases NO son orígenes: solo países
 
 def afiliado(u, t):
     if t["aff"]: return t["aff"]
@@ -238,7 +238,7 @@ def ficha(t, n, u, img, txt, precio, stock, g=None, gsrc="", det=None):
     tl = txt.lower()
     return {"n": norm(n), "r": t["nombre"], "c": t["ciudad"], "u": u, "aff_url": afiliado(u, t), "img": img or "",
         "mt": (lambda m: [] if len(m) >= 4 else m)(hallar(METODOS, txt)),
-        "o": (pais(det.get("origen", ""), "") or pais(n, txt) or det.get("origen", "")), "p": limpiar_proceso(det.get("proceso")) or (hallar(PROC, txt) or [""])[0],
+        "o": (pais(det.get("origen", ""), "") or pais(n, txt)), "p": limpiar_proceso(det.get("proceso")) or (hallar(PROC, txt) or [""])[0],
         "nt": hallar(NOTAS, det["notas"]) if det.get("notas") else hallar(NOTAS, txt), "notas": det.get("notas", ""),
         "reg": det.get("region", ""), "finca": det.get("finca", ""), "prod": det.get("productor", ""), "var": det.get("varietal", ""), "alt": det.get("altitud", ""),
         "act": date.today().isoformat(), "logo": t.get("logo", ""), "pr": pr, "g": g, "gsrc": gsrc if g else "", "p250": round(precio * 250 / g, 2) if g else None,
@@ -460,6 +460,49 @@ def enlaces_categoria(soup, base, cat):
             res.append(limpia); FRAG.setdefault(limpia, frag)
     return res
 
+EXCL_TIENDA = re.compile(r"carrito|/cart\b|checkout|cuenta|account|login|contact|blog|politica|aviso|cookies|envios|condiciones|faq|nosotros|about|privacidad|desayun|brunch|evento|reserva|curso|taller|formacion|experienc|donde|noticias|galeria|trabaja|empleo|wholesale|mayorista|horeca", re.I)
+PRECIO_RE = re.compile(r"(\d{1,4}(?:[.,]\d{1,2})?)\s?(?:€|eur\b)", re.I)
+AGOTADO_RE = re.compile(r"agotado|sin stock|sold out|no disponible|sin existencias", re.I)
+BLOQUES = ["li", "article", "div", "section", "tr"]
+
+def productos_en_bloques(t, paginas, maximo=80):
+    """Catálogo en una sola página (sin ficha por producto, p. ej. arabiga-coffee.com/tienda.html): cada bloque con
+    nombre + precio en € es un café. Solo se acepta si hay gramos (en el bloque o en la página) o datos de grano."""
+    out, vistos = [], set()
+    for base, soup in paginas:
+        g_pag = gramos_estandar(norm(soup.get_text(" ", strip=True))[:3000])
+        cands = []
+        for el in soup.find_all(BLOQUES):
+            txt = norm(el.get_text(" ", strip=True))
+            if 15 < len(txt) < 700 and PRECIO_RE.search(txt): cands.append((el, txt))
+            if len(cands) > 600: break
+        ids = {id(el) for el, _ in cands}
+        for el, txt in cands:
+            if any(id(h) in ids for h in el.find_all(BLOQUES)): continue          # solo el bloque más pequeño
+            nm = el.find(["h1", "h2", "h3", "h4", "h5", "h6", "strong", "b"]) or el.find("a")
+            nombre = norm(nm.get_text(" ", strip=True)) if nm else ""
+            m = next((x for x in PRECIO_RE.finditer(txt) if (num(x.group(1)) or 0) > 0), None)
+            precio = num(m.group(1)) if m else None
+            if not (3 <= len(nombre) <= 90) or not precio or not (3 <= precio <= 200) or (nombre.lower(), precio) in vistos: continue
+            vistos.add((nombre.lower(), precio))
+            a = el.find("a", href=True)
+            url = up.urljoin(base, a["href"]) if a else base
+            if url.split("#")[0].rstrip("/") == base.split("#")[0].rstrip("/") and "#" not in url:
+                url = f"{base.split('#')[0]}#{el.get('id') or re.sub(r'[^a-z0-9]+', '-', sa(nombre)).strip('-')}"
+            desc = norm(txt.replace(nombre, "", 1))
+            g = gramos(txt) or gramos_estandar(txt) or g_pag
+            ev_extra = len(re.findall(r"altitud|msnm|tueste|variedad|notas? de cata|proceso|finca|cosecha|origen", txt, re.I)) >= 2
+            if not es_cafe(nombre, "", desc, bool(g), precio, False, ev_extra, True): continue
+            det = detalles_texto(txt)
+            partes = [p.strip() for p in re.split(r"\s[·•|]\s", txt)]
+            idx = next((i for i, p in enumerate(partes) if PRECIO_RE.search(p)), -1)
+            if "notas" not in det and idx >= 3: det["notas"] = partes[idx - 1]           # "Nombre · perfil · notas · 19,00 €"
+            im = el.find("img")
+            img = up.urljoin(base, im.get("src") or im.get("data-src") or "") if im else ""
+            out.append(ficha(t, nombre, url, img, f"{nombre} {desc}", precio, not AGOTADO_RE.search(txt), g, "bloque", det=det))
+            if len(out) >= maximo: return out
+    return out
+
 def pagina(t, u, confiar=False):
     soup = BeautifulSoup(get(u), "html.parser"); prod = None
     for s in soup.find_all("script", type="application/ld+json"):
@@ -487,7 +530,7 @@ def pagina(t, u, confiar=False):
     return ficha(t, n, u, img if isinstance(img, str) else "", txt, pr, stock, gramos(n) or gramos_texto(desc) or peso_pagina(norm(soup.get_text(" ", strip=True))) or gramos(FRAG.get(u, "").replace("-", " ")), "página", det=detalles_html(soup))
 
 def html_generico(t):
-    confiar = bool(t["cat"])
+    confiar, paginas = bool(t["cat"]), []
     if t["cat"]: listados = [t["cat"]]
     else:
         home = BeautifulSoup(get(t["web"]), "html.parser")
@@ -497,9 +540,11 @@ def html_generico(t):
         for a in home.find_all("a", href=True):
             u = up.urljoin(t["web"], limpia_href(a["href"])); pu = up.urlparse(u)
             if (dominio(pu.netloc) != dominio(up.urlparse(t["org"]).netloc) or u in tiendas or u.rstrip("/") == t["web"].rstrip("/")
-                    or EXCL.search(pu.path) or NEG_URL.search(pu.path) or es_producto(pu.path) or MEDIA.search(pu.path)): continue
-            if (re.search(r"tienda|shop|comprar|caf[eé]s?\b|productos|botiga|store|todos", a.get_text(" ", strip=True), re.I)
+                    or EXCL_TIENDA.search(pu.path) or NEG_URL.search(pu.path) or es_producto(pu.path) or MEDIA.search(pu.path)): continue
+            if (re.search(r"tienda|shop|comprar|caf[eé]s?\b|productos|botiga|store|todos|carta|cat[aá]logo|ver todo|elige", a.get_text(" ", strip=True), re.I)
                     or re.search(r"/(tienda|shop|productos?|store|comprar|cafes?|collections)[\w-]*(/|$)", pu.path, re.I)): tiendas.append(u)
+        tiendas.sort(key=lambda x: 0 if re.search(r"tienda|shop|carta|cat[aá]logo|comprar|store|productos", x, re.I) else 1)
+        paginas.append((t["web"], home))
         tiendas += [h for h in {up.urljoin(t["web"], a["href"]) for a in home.find_all("a", href=True)} if re.match(r"https?://(tienda|shop|store)\.", h)]
         confiar, listados = bool(sel), sel or (tiendas + [t["web"]] + [t["org"] + r for r in RUTAS])
     vistos, fallos = [], []
@@ -512,6 +557,7 @@ def html_generico(t):
             for u in cands:
                 try:
                     html = get(u); soup = BeautifulSoup(html, "html.parser")
+                    if len(paginas) < 12: paginas.append((u, soup))
                     nuevos = [l for l in ((enlaces_categoria(soup, u, t["cat"]) if t["cat"] else []) or enlaces(soup, u, t["org"], es_producto) or enlaces_crudos(html, u, t["org"], es_producto) or enlaces_tarjeta(soup, u, t["org"])) if l not in vistos]
                     a = soup.find("a", rel="next") or soup.find("a", href=re.compile(r"[?&](?:offset|page)=\d"))
                     siguiente = up.urljoin(u, a["href"]) if a else None
@@ -535,6 +581,7 @@ def html_generico(t):
         except Exception as e: fallos.append(str(e)[:100]); continue
         if f: out.append(f)
         time.sleep(1)
+    if not out: out = productos_en_bloques(t, paginas)
     if not out and fallos: raise Exception("sin productos; " + " | ".join(fallos[:2]))
     return out
 
@@ -575,7 +622,13 @@ def huella(t):
     soup = BeautifulSoup(h, "html.parser")
     ents = [f"{a.get_text(' ', strip=True)[:25]} -> {up.urljoin(t['web'], a['href'])}" for a in soup.find_all("a", href=True)
             if re.search(r"tienda|shop|comprar|store|productos|collections", a["href"] + " " + a.get_text(" "), re.I)]
-    return f"plataforma: {pl}; enlaces de tienda: {ents[:8]}"
+    txt = soup.get_text(" ", strip=True); low = h.lower(); sen = []
+    if "wa.me/c/" in low: sen.append("pedidos por catálogo de WhatsApp: sin tienda web")
+    if "square.site" in low or "squareup" in low: sen.append("tienda Square Online (se carga con JavaScript)")
+    if "mywebsite" in low or "ionos" in low: sen.append("tienda IONOS (se carga con JavaScript)")
+    if re.search(r"horeca|hosteler[ií]a", low): sen.append("catálogo para hostelería")
+    if not PRECIO_RE.search(txt): sen.append("la portada no muestra precios")
+    return f"plataforma: {pl}; señales: {sen}; enlaces de tienda: {ents[:8]}"
 
 def estado(u, j=False):
     """Devuelve (resultado, texto): 'ok' o el motivo del fallo."""
@@ -663,7 +716,7 @@ def leer_ficha_pagina(u):
 
 def aplicar_detalles(c, e):
     det = e.get("d") or {}
-    if det.get("origen"): c["o"] = pais(det["origen"], "") or det["origen"]
+    if det.get("origen"): c["o"] = pais(det["origen"], "") or c.get("o", "")
     if limpiar_proceso(det.get("proceso")): c["p"] = limpiar_proceso(det["proceso"])
     if det.get("notas"): c["notas"] = det["notas"]; c["nt"] = hallar(NOTAS, det["notas"]) or c.get("nt", [])
     v = sca_det(det, "")
@@ -713,7 +766,7 @@ def fecha_es(iso):
     except Exception: return ""
 
 def a_fila(c):
-    return [c.get("r"), c.get("c"), c.get("n"), c.get("pr"), c.get("g") or "", c.get("o") or "", c.get("p") or "",
+    return [c.get("r"), c.get("c"), c.get("n"), c.get("pr"), c.get("g") or "", c["o"] if c.get("o") in ORIG else "", c.get("p") or "",
             c.get("notas") or ", ".join(c.get("nt") or []), c.get("sca") or "", c.get("u"), c.get("img") or "", 1 if c.get("s") else 0,
             fecha_es(c.get("act")), c.get("reg") or "", c.get("finca") or "", c.get("prod") or "", c.get("var") or "", c.get("alt") or "",
             "|".join(c.get("mt") or []), "|".join(c.get("nt") or []), c.get("aff_url") or c.get("u"), 1 if c.get("af") else 0,
@@ -777,7 +830,7 @@ def cargar_manuales(tostadores):
                   f"{n} {r.get('Origen','')} {r.get('Proceso','')} {r.get('Notas','')}", precio,
                   (r.get("Disponible") or "1").strip().lower() not in ("0", "no"), g, "manual")
         for k, col in (("o", "Origen"), ("p", "Proceso")):
-            if (r.get(col) or "").strip(): f[k] = r[col].strip()
+            if (r.get(col) or "").strip(): f[k] = (pais(r[col], "") or f.get("o", "")) if k == "o" else r[col].strip()
         if num(r.get("SCA")): f["sca"] = num(r.get("SCA"))
         f.pop("_d", None); f["manual"] = True; f["act"] = ""
         f["notas"] = (r.get("Notas") or "").strip()
@@ -806,7 +859,7 @@ def parse_fecha(x):
 def aplicar_correcciones(total):
     """correcciones.csv: arreglos manuales sobre cafés leídos automáticamente. Se reaplican en cada ejecución."""
     if not os.path.exists("correcciones.csv"): return total
-    k = lambda u: (u or "").split("#")[0].rstrip("/").lower()
+    k = lambda u: (u or "").rstrip("/").lower()
     por_url = {k(c["u"]): c for c in total}
     por_nom = {(c["r"].lower(), c["n"].lower()): c for c in total}
     ocultos, n_ok, hoy = set(), 0, date.today()
@@ -818,7 +871,7 @@ def aplicar_correcciones(total):
         if (r.get("Ocultar") or "").strip().lower() in ("1", "si", "sí", "x"): ocultos.add(id(c)); continue
         v = lambda col: (r.get(col) or "").strip()
         if v("Nombre_Nuevo"): c["n"] = v("Nombre_Nuevo")
-        if v("Origen"): c["o"] = v("Origen")
+        if v("Origen"): c["o"] = pais(v("Origen"), "") or c.get("o", "")
         if v("Proceso"): c["p"] = v("Proceso")
         if v("Notas"): c["notas"] = v("Notas")
         if v("Notas"): c["nt"] = [x for x in (hallar(NOTAS, v("Notas")) or [y.strip() for y in re.split(r"[,;|]", v("Notas")) if y.strip()])]
@@ -899,7 +952,7 @@ def main():
     total += cargar_manuales(tostadores)
     vistos_u, unicos = set(), []
     for c in total:                                    # sin duplicados (mismo enlace)
-        k = (c.get("u") or "").split("#")[0].rstrip("/")
+        k = (c.get("u") or "").rstrip("/")
         if k and k in vistos_u: continue
         vistos_u.add(k); unicos.append(c)
     total = aplicar_correcciones(unicos)

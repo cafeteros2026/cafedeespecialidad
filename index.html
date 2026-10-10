@@ -6,494 +6,223 @@
   <title>Buscador de Café Especial | Si existe, está aquí</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #FFF8F0;
-      --ink: #1E1B18;
-      --coral: #FF5A36;
-      --teal: #3ABEFF;
-      --yellow: #FFD166;
-      --purple: #C8963E;
-      --card-bg: #FFFFFF;
-      --border-thick: 3px solid var(--ink);
-      --shadow-pop: 5px 5px 0px var(--ink);
-      --shadow-hover: 8px 8px 0px var(--ink);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--ink);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      line-height: 1.5;
-      padding: 20px;
-    }
-
-    /* HEADER / NAV */
-    header {
-      max-width: 1200px;
-      margin: 0 auto 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 25px;
-      background: var(--yellow);
-      border: var(--border-thick);
-      box-shadow: var(--shadow-pop);
-      border-radius: 16px;
-    }
-
-    .logo {
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: -1px;
-    }
-
-    .badge-header {
-      background: var(--coral);
-      color: #FFF;
-      padding: 6px 14px;
-      border: var(--border-thick);
-      border-radius: 50px;
-      font-weight: 800;
-      font-size: 0.85rem;
-      transform: rotate(-2deg);
-    }
-
-    /* HERO SECTION */
-    .hero {
-      max-width: 1200px;
-      margin: 0 auto 50px;
-      text-align: center;
-      position: relative;
-      padding: 40px 20px;
-    }
-
-    .hero-tag {
-      display: inline-block;
-      background: var(--teal);
-      border: var(--border-thick);
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-weight: 800;
-      font-size: 0.9rem;
-      box-shadow: 3px 3px 0px var(--ink);
-      margin-bottom: 20px;
-      transform: rotate(1.5deg);
-    }
-
-    .hero h1 {
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: clamp(2.8rem, 7vw, 5.2rem);
-      line-height: 0.95;
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-      letter-spacing: -2px;
-    }
-
-   .hero h1 span {
-  color: var(--coral);
-  /* Eliminamos el text-shadow y el webkit-text-stroke */
-}
-
-    .hero p {
-      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-      font-weight: 700;
-      max-width: 650px;
-      margin: 0 auto 30px;
-      background: #FFF;
-      display: inline-block;
-      padding: 8px 20px;
-      border: var(--border-thick);
-      box-shadow: 4px 4px 0px var(--ink);
-      border-radius: 12px;
-    }
-
-    /* BUSCADOR POP */
-    .search-container {
-      max-width: 800px;
-      margin: 0 auto;
-      display: flex;
-      gap: 12px;
-      background: #FFF;
-      padding: 12px;
-      border: var(--border-thick);
-      box-shadow: var(--shadow-pop);
-      border-radius: 16px;
-    }
-
-    .search-input {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      padding: 10px 15px;
-    }
-
-    .search-btn {
-      background: var(--coral);
-      color: white;
-      border: var(--border-thick);
-      padding: 12px 28px;
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 800;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      box-shadow: 3px 3px 0px var(--ink);
-    }
-
-    .search-btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0px var(--ink);
-    }
-
-    /* FILTROS RÁPIDOS */
-    .filters {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      max-width: 900px;
-      margin: 25px auto 0;
-    }
-
-    .filter-chip {
-      background: #FFF;
-      border: var(--border-thick);
-      padding: 6px 14px;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      box-shadow: 2px 2px 0px var(--ink);
-      transition: transform 0.1s;
-    }
-
-    .filter-chip:hover {
-      background: var(--yellow);
-      transform: translateY(-2px);
-    }
-
-    /* GRID DE CAFÉS */
-    .grid-container {
-      max-width: 1200px;
-      margin: 50px auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 30px;
-    }
-
-    /* TARJETA TIPO PAQUETE POP */
-    .coffee-card {
-      background: var(--card-bg);
-      border: var(--border-thick);
-      border-radius: 20px;
-      box-shadow: var(--shadow-pop);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: all 0.2s ease;
-      position: relative;
-    }
-
-    .coffee-card:hover {
-      transform: translate(-3px, -3px);
-      box-shadow: var(--shadow-hover);
-    }
-
-    .card-header-art {
-      height: 180px;
-      background: var(--teal);
-      border-bottom: var(--border-thick);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Ilustración geométrica retro integrada con CSS */
-    .art-shape-1 {
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      background: var(--yellow);
-      border: var(--border-thick);
-      border-radius: 50%;
-      top: -20px;
-      left: -20px;
-    }
-
-    .art-shape-2 {
-      position: absolute;
-      width: 0; 
-      height: 0; 
-      border-left: 50px solid transparent;
-      border-right: 50px solid transparent;
-      border-bottom: 90px solid var(--coral);
-      bottom: -10px;
-      right: -10px;
-      transform: rotate(15deg);
-    }
-
-    .origin-badge {
-      position: relative;
-      z-index: 2;
-      background: #FFF;
-      border: var(--border-thick);
-      padding: 6px 16px;
-      border-radius: 50px;
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 800;
-      box-shadow: 3px 3px 0px var(--ink);
-      transform: rotate(-3deg);
-    }
-
-    .card-body {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-
-    .roaster-name {
-      font-size: 0.85rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--coral);
-      letter-spacing: 0.5px;
-    }
-
-    .coffee-title {
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 1.5rem;
-      line-height: 1.1;
-      margin: 4px 0 12px;
-    }
-
-    .tags-container {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 15px;
-    }
-
-    .tag {
-      font-size: 0.75rem;
-      font-weight: 800;
-      padding: 3px 8px;
-      border: 2px solid var(--ink);
-      border-radius: 6px;
-      background: var(--bg);
-    }
-
-    .notes-box {
-      background: var(--bg);
-      border: 2px dashed var(--ink);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-
-    .card-footer {
-      margin-top: auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 10px;
-      border-top: 2px solid #F0F0F0;
-    }
-
-    .price {
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 1.6rem;
-      font-weight: 800;
-    }
-
-    .btn-buy {
-      background: var(--yellow);
-      color: var(--ink);
-      border: var(--border-thick);
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 0.9rem;
-      text-decoration: none;
-      box-shadow: 2px 2px 0px var(--ink);
-      transition: all 0.1s;
-    }
-
-    .btn-buy:hover {
-      background: var(--coral);
-      color: #FFF;
-      transform: translate(-1px, -1px);
-      box-shadow: 3px 3px 0px var(--ink);
-    }
+    :root{--bg:#FFF8F0;--ink:#1E1B18;--coral:#FF5A36;--teal:#3ABEFF;--yellow:#FFD166;--gold:#C8963E;--card-bg:#FFF;
+      --border-thick:3px solid var(--ink);--shadow-pop:5px 5px 0 var(--ink);--shadow-hover:8px 8px 0 var(--ink)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;line-height:1.5;padding:20px}
+    button,select,input{font-family:inherit;color:var(--ink)}
+    header{max-width:1200px;margin:0 auto 40px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 25px;background:var(--yellow);border:var(--border-thick);box-shadow:var(--shadow-pop);border-radius:16px}
+    .logo{font-family:'Bricolage Grotesque',sans-serif;font-size:1.8rem;font-weight:800;text-transform:uppercase;letter-spacing:-1px}
+    .badge-header{background:var(--coral);color:#FFF;padding:6px 14px;border:var(--border-thick);border-radius:50px;font-weight:800;font-size:.85rem;transform:rotate(-2deg);white-space:nowrap}
+    .hero{max-width:1200px;margin:0 auto 30px;text-align:center;padding:30px 20px}
+    .hero-tag{display:inline-block;background:var(--teal);border:var(--border-thick);padding:6px 16px;border-radius:20px;font-weight:800;font-size:.9rem;box-shadow:3px 3px 0 var(--ink);margin-bottom:20px;transform:rotate(1.5deg)}
+    .hero h1{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(2.8rem,7vw,5.2rem);line-height:.95;font-weight:800;text-transform:uppercase;margin-bottom:20px;letter-spacing:-2px}
+    .hero h1 span{color:var(--coral)}
+    .hero p{font-size:clamp(1.2rem,2.5vw,1.6rem);font-weight:700;max-width:650px;margin:0 auto 30px;background:#FFF;display:inline-block;padding:8px 20px;border:var(--border-thick);box-shadow:4px 4px 0 var(--ink);border-radius:12px}
+    .search-container{max-width:800px;margin:0 auto;display:flex;gap:12px;background:#FFF;padding:12px;border:var(--border-thick);box-shadow:var(--shadow-pop);border-radius:16px}
+    .search-input{flex:1;min-width:0;border:none;outline:none;font-size:1.1rem;font-weight:700;padding:10px 15px;background:transparent}
+    .search-btn{background:var(--coral);color:#fff;border:var(--border-thick);padding:12px 28px;font-family:'Bricolage Grotesque',sans-serif;font-size:1.2rem;font-weight:800;border-radius:10px;cursor:pointer;transition:all .15s;box-shadow:3px 3px 0 var(--ink)}
+    .search-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+    .filters{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;max-width:900px;margin:25px auto 0}
+    .filter-chip{background:#FFF;border:var(--border-thick);padding:6px 14px;border-radius:30px;font-weight:700;font-size:.9rem;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:transform .1s}
+    .filter-chip:hover{background:var(--yellow);transform:translateY(-2px)}
+    .filter-chip[aria-pressed=true]{background:var(--coral);color:#fff}
+    .panel{max-width:1200px;margin:0 auto;background:#FFF;border:var(--border-thick);border-radius:16px;box-shadow:var(--shadow-pop)}
+    .panel summary{cursor:pointer;list-style:none;padding:14px 22px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.2rem;text-transform:uppercase}
+    .panel summary::-webkit-details-marker{display:none}
+    .panel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px 22px;padding:4px 22px 22px}
+    .f label,.f b{display:block;font-weight:800;font-size:.85rem;margin-bottom:6px}
+    .f select{width:100%;padding:9px 10px;border:var(--border-thick);border-radius:10px;background:var(--bg);font-weight:700}
+    .f input[type=range]{width:100%;accent-color:var(--coral)}
+    .f.wide{grid-column:1/-1}
+    .chips{display:flex;flex-wrap:wrap;gap:6px}
+    .chip{border:2px solid var(--ink);background:var(--bg);padding:4px 11px;border-radius:30px;font-weight:700;font-size:.8rem;cursor:pointer}
+    .chip[aria-pressed=true]{background:var(--yellow);box-shadow:2px 2px 0 var(--ink)}
+    .chips:not(.all) .extra{display:none}
+    .link{background:none;border:0;text-decoration:underline;font-weight:800;font-size:.85rem;cursor:pointer;margin:8px 10px 0 0}
+    .chk{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem}
+    .chk input{width:18px;height:18px;accent-color:var(--coral)}
+    .bar{max-width:1200px;margin:34px auto 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    #count{font-weight:800}
+    .bar select{padding:9px 10px;border:var(--border-thick);border-radius:10px;background:#FFF;font-weight:700}
+    .grid-container{max-width:1200px;margin:24px auto 30px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:30px}
+    .coffee-card{background:var(--card-bg);border:var(--border-thick);border-radius:20px;box-shadow:var(--shadow-pop);overflow:hidden;display:flex;flex-direction:column;transition:all .2s;position:relative}
+    .coffee-card:hover{transform:translate(-3px,-3px);box-shadow:var(--shadow-hover)}
+    .coffee-card.off{opacity:.65}
+    .card-header-art{height:180px;border-bottom:var(--border-thick);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+    .card-header-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .art-shape-1{position:absolute;width:100px;height:100px;background:var(--yellow);border:var(--border-thick);border-radius:50%;top:-20px;left:-20px}
+    .art-shape-2{position:absolute;width:0;height:0;border-left:50px solid transparent;border-right:50px solid transparent;border-bottom:90px solid var(--coral);bottom:-10px;right:-10px;transform:rotate(15deg)}
+    .origen{font-weight:800;font-size:.95rem;margin:-6px 0 12px}.origen small{font-weight:600;opacity:.7}
+    .flag{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;margin-right:4px}
+    .card-body{padding:20px;display:flex;flex-direction:column;flex-grow:1}
+    .roaster-name{font-size:.85rem;font-weight:800;text-transform:uppercase;color:var(--coral);letter-spacing:.5px}
+    .coffee-title{font-family:'Bricolage Grotesque',sans-serif;font-size:1.5rem;line-height:1.1;margin:4px 0 12px}
+    .tags-container{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:15px}
+    .tag{font-size:.75rem;font-weight:800;padding:3px 8px;border:2px solid var(--ink);border-radius:6px;background:var(--bg)}
+    .tag.y{background:var(--yellow)}.tag.t{background:var(--teal)}
+    .notes-box{background:var(--bg);border:2px dashed var(--ink);padding:8px 12px;border-radius:8px;font-size:.85rem;font-weight:700;margin-bottom:20px}
+    .notes-box.vacio{opacity:.55;font-weight:500}
+    .card-footer{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:2px solid #F0F0F0}
+    .price{font-family:'Bricolage Grotesque',sans-serif;font-size:1.6rem;font-weight:800;line-height:1.1}
+    .price small{font:600 .75rem 'Plus Jakarta Sans',sans-serif;margin-left:4px}
+    .price .sub{display:block;font:600 .72rem 'Plus Jakarta Sans',sans-serif;opacity:.7}
+    .btn-buy{background:var(--yellow);color:var(--ink);border:var(--border-thick);padding:8px 16px;border-radius:10px;font-weight:800;font-size:.9rem;text-decoration:none;box-shadow:2px 2px 0 var(--ink);transition:all .1s;white-space:nowrap}
+    .btn-buy:hover{background:var(--coral);color:#FFF;transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+    .btn-buy.agotado{background:#DDD;pointer-events:none;box-shadow:none}
+    .more{display:block;margin:0 auto 20px;background:var(--coral);color:#fff;border:var(--border-thick);padding:12px 28px;font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;font-weight:800;border-radius:12px;cursor:pointer;box-shadow:var(--shadow-pop)}
+    .empty{grid-column:1/-1;text-align:center;font-weight:800;padding:40px;border:3px dashed var(--ink);border-radius:16px}
+    footer{max-width:1200px;margin:30px auto 0;padding-top:18px;border-top:var(--border-thick);font-size:.8rem;font-weight:600}
   </style>
 </head>
 <body>
-
-  <!-- NAVEGACIÓN -->
   <header>
     <div class="logo">CaféRadar ☕</div>
-    <div class="badge-header">+120 Tostadores</div>
+    <div class="badge-header" id="nTost">Cargando tostadores…</div>
   </header>
 
-  <!-- HERO PRINCIPAL -->
   <section class="hero">
     <div class="hero-tag">El buscador definitivo de especialidad</div>
     <h1>Si existe, <span>está aquí</span></h1>
     <p>Busca. Encuentra. Pídelo.</p>
-
-    <!-- BARRA DE BÚSQUEDA -->
     <div class="search-container">
-      <input type="text" class="search-input" placeholder="Origen, tostador, notas (ej. Etiopía, Lavado, Melocotón)...">
-      <button class="search-btn">BUSCAR</button>
+      <input type="text" id="q" class="search-input" placeholder="Origen, tostador, notas (ej. Etiopía, Lavado, Melocotón)..." autocomplete="off">
+      <button class="search-btn" id="btn">BUSCAR</button>
     </div>
-
-    <!-- FILTROS POPULARIDAD -->
-    <div class="filters">
-      <span class="filter-chip">🍓 Notas a Fruta</span>
-      <span class="filter-chip">🍫 Chocolate y Frutos Secos</span>
-      <span class="filter-chip">⚡ Espresso Filter</span>
-      <span class="filter-chip">🏆 +86 SCA</span>
-      <span class="filter-chip">🌱 Procesos Experimentales</span>
-    </div>
+    <div class="filters" id="presets"></div>
   </section>
 
-  <!-- LISTADO DE CAFÉS -->
-<main class="grid-container" id="coffee-grid">
-    <!-- El contenido se generará mediante JavaScript -->
-  </main>
+  <details class="panel" id="panel" open>
+    <summary>Afinar la búsqueda</summary>
+    <div class="panel-grid">
+      <div class="f"><label for="origen">Origen</label><select id="origen"><option value="">Todos los orígenes</option></select></div>
+      <div class="f"><label for="ciudad">Ciudad del tostador</label><select id="ciudad"><option value="">Todas las ciudades</option></select></div>
+      <div class="f"><label for="metodo">Para preparar en</label>
+        <select id="metodo"><option value="">Cualquier método</option><option value="Espresso">Espresso</option><option value="Filtro">Filtro (V60, Chemex, goteo…)</option><option value="Moka">Moka / italiana</option><option value="Prensa francesa">Prensa francesa</option><option value="AeroPress">AeroPress</option><option value="Cold brew">Cold brew</option><option value="Superautomática">Superautomática</option></select></div>
+      <div class="f" id="scaf"><label for="scav">SCA mínima: <span id="scavv">cualquiera</span></label><input id="scav" type="range" min="80" max="92" step="0.5" value="80"></div>
+      <div class="f"><label for="pmax">Precio máx. por 250 g: <span id="pmaxv">sin límite</span></label><input id="pmax" type="range" min="5" max="100" step="1" value="100"></div>
+      <div class="f"><label>&nbsp;</label><div class="chk"><input type="checkbox" id="stock"><label for="stock" style="margin:0">Solo disponibles</label></div></div>
+      <div class="f wide"><b>Notas de cata</b><div class="chips" id="notas"></div></div>
+    </div>
+  </details>
 
-  <script>
-    // Paleta de colores para asignar dinámicamente según el origen
-    const COLORS = ['#3ABEFF', '#FFD166', '#FF5A36', '#C8963E'];
+  <div class="bar">
+    <span id="count"></span>
+    <div><button class="link" id="reset">Limpiar filtros</button>
+      <select id="orden" aria-label="Ordenar"><option value="pa">Precio por 250 g: menor a mayor</option><option value="pd">Precio por 250 g: mayor a menor</option><option value="sca">Mayor puntuación SCA</option><option value="az">Nombre A-Z</option></select></div>
+  </div>
 
+  <main class="grid-container" id="grid"></main>
+  <button class="more" id="more" style="display:none">Mostrar más cafés</button>
 
-// Mapa estricto de orígenes y banderas
-const FLAGS = {
-  'ETIOPÍA': '🇪🇹', 'KENIA': '🇰🇪', 'COLOMBIA': '🇨🇴', 'BRASIL': '🇧🇷', 'GUATEMALA': '🇬🇹',
-  'COSTA RICA': '🇨🇷', 'PERÚ': '🇵🇪', 'HONDURAS': '🇭🇳', 'EL SALVADOR': '🇸🇻', 'PANAMÁ': '🇵🇦',
-  'RUANDA': '🇷🇼', 'BURUNDI': '🇧🇮', 'UGANDA': '🇺🇬', 'VENEZUELA': '🇻🇪', 'NICARAGUA': '🇳🇮',
-  'MÉXICO': '🇲🇽', 'INDONESIA': '🇮🇩', 'TANZANIA': '🇹🇿', 'BOLIVIA': '🇧🇴', 'ECUADOR': '🇪🇨',
-  'YEMEN': '🇾🇪', 'INDIA': '🇮🇳', 'PAPÚA NUEVA GUINEA': '🇵🇬', 'TAILANDIA': '🇹🇭', 'JAMAICA': '🇯🇲',
-  'VIETNAM': '🇻🇳', 'LAOS': '🇱🇦', 'MALAWI': '🇲🇼', 'ZAMBIA': '🇿🇲', 'REPÚBLICA DOMINICANA': '🇩🇴',
-  'HAWÁI': '🇺🇸', 'EEUU': '🇺🇸', 'ESTADOS UNIDOS': '🇺🇸', 'CONGO': '🇨🇩', 'FILIPINAS': '🇵🇭',
-  'TIMOR ORIENTAL': '🇹🇱', 'MYANMAR': '🇲🇲', 'CHINA': '🇨🇳'
-};
+  <footer><span id="upd"></span>Algunos enlaces son de afiliación: si compras a través de ellos podemos recibir una pequeña comisión, sin coste adicional para ti. Precios y disponibilidad orientativos: confírmalos en la web del tostador.</footer>
 
-const PAISES_VALIDOS = Object.keys(FLAGS);
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=v=>{const x=parseFloat(String(v==null?"":v).replace(",","."));return isNaN(x)?null:x};
+const sa=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const eur=v=>(+v||0).toFixed(2).replace(".",",");
+const FL={"Etiopía":"🇪🇹","Kenia":"🇰🇪","Colombia":"🇨🇴","Brasil":"🇧🇷","Guatemala":"🇬🇹","Costa Rica":"🇨🇷","Perú":"🇵🇪","Honduras":"🇭🇳","El Salvador":"🇸🇻","Panamá":"🇵🇦","Ruanda":"🇷🇼","Burundi":"🇧🇮","Uganda":"🇺🇬","Venezuela":"🇻🇪","Nicaragua":"🇳🇮","México":"🇲🇽","Indonesia":"🇮🇩","Tanzania":"🇹🇿","Bolivia":"🇧🇴","Ecuador":"🇪🇨","Yemen":"🇾🇪","India":"🇮🇳","Papúa Nueva Guinea":"🇵🇬","Tailandia":"🇹🇭","Jamaica":"🇯🇲","Vietnam":"🇻🇳","Laos":"🇱🇦","Malawi":"🇲🇼","Zambia":"🇿🇲","República Dominicana":"🇩🇴","Estados Unidos":"🇺🇸","China":"🇨🇳","Taiwán":"🇹🇼","Nepal":"🇳🇵","Camerún":"🇨🇲","Costa de Marfil":"🇨🇮","Mozambique":"🇲🇿","Madagascar":"🇲🇬","Haití":"🇭🇹","Paraguay":"🇵🇾","Santo Tomé y Príncipe":"🇸🇹","Congo":"🇨🇩","Filipinas":"🇵🇭","Timor Oriental":"🇹🇱","Myanmar":"🇲🇲"};
+const ALIAS={"Estados Unidos":["eeuu","ee.uu","estados unidos","united states","hawai","kona"],"Etiopía":["ethiopia"],"Kenia":["kenya"],"Brasil":["brazil"],"Ruanda":["rwanda"],"Tailandia":["thailand"],"Filipinas":["philippines"],"Papúa Nueva Guinea":["papua"],"Timor Oriental":["timor"],"China":["yunnan"],"Taiwán":["taiwan"]};
+function paisWeb(raw){const s=sa(raw);if(!s)return "";
+  for(const p of Object.keys(FL)){for(const c of [sa(p),...(ALIAS[p]||[])]){if(new RegExp("(^|[^a-z])"+c.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|[^a-z])").test(s))return p}}
+  return ""}
+const NOTAS=["Frutos rojos","Cítrico","Fruta tropical","Fruta de hueso","Floral","Té","Chocolate","Cacao","Caramelo","Miel","Manzana y pera","Uva y vino","Panela","Frutos secos","Vainilla","Especias","Herbal","Madera y tabaco","Mermelada","Cereal y pan"];
+const FRUTA=["Frutos rojos","Cítrico","Fruta tropical","Fruta de hueso","Manzana y pera","Uva y vino","Mermelada"];
+const PRESETS={
+  fruta:{l:"🍓 Notas a fruta",t:d=>d.nf.some(n=>FRUTA.includes(n))},
+  choco:{l:"🍫 Chocolate y frutos secos",t:d=>d.nf.some(n=>["Chocolate","Cacao","Frutos secos"].includes(n))},
+  versatil:{l:"⚡ Espresso y filtro",t:d=>!d.mt.length||(d.mt.includes("Espresso")&&d.mt.includes("Filtro"))},
+  sca86:{l:"🏆 +86 SCA",t:d=>d.sca!=null&&d.sca>=86},
+  exp:{l:"🌱 Procesos experimentales",t:d=>/anaer|fermenta|macera|koji|carb[oó]nic|t[eé]rmic|l[aá]ctic|experiment|infus/i.test(d.p)}};
+const ARTE=["var(--teal)","var(--yellow)","var(--coral)"];
+let D=[],show=24;const sel=new Set(),pre=new Set();
 
-// Función para extraer solo países reales de un texto
-function obtenerOrigenesLimpios(textoOrigen) {
-  const textoUpper = (textoOrigen || '').toUpperCase();
-  return PAISES_VALIDOS.filter(pais => textoUpper.includes(pais));
+function parseCSV(t){
+  t=t.replace(/^\uFEFF/,"");const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else if(c==='"')q=true;
+    else if(c===";"){row.push(cur);cur=""}
+    else if(c==="\n"){row.push(cur);rows.push(row);row=[];cur=""}
+    else if(c!=="\r")cur+=c}
+  if(cur!==""||row.length){row.push(cur);rows.push(row)}
+  return rows.filter(r=>r.length>1||r[0]);
 }
+function aObjetos(rows){
+  const h=rows[0];
+  return rows.slice(1).map((r,i)=>{const o={};h.forEach((k,j)=>o[k]=r[j]);
+    const g=num(o.Gramos),pr=num(o.Precio);
+    const d={i,t:o.Tostador,c:o.Ciudad,n:o.Cafe,pr,g,o:paisWeb(o.Origen),p:o.Proceso||"",notas:o.Notas||"",sca:num(o.SCA),u:o.URL,img:o.Imagen,
+      s:o.Disponible!=="0",act:o.Actualizado||"",mt:(o.Metodos||"").split("|").filter(Boolean),nf:(o.NotasFiltro||"").split("|").filter(Boolean),
+      aff:o.EnlaceCompra||o.URL,af:o.Afiliado==="1",reg:o.Region||"",finca:o.Finca||"",prod:o.Productor||"",var:o.Varietal||"",alt:o.Altitud||""};
+    d.p250=g&&pr?pr*250/g:null;d.pk=d.p250!=null?d.p250:pr;
+    d.hay=sa([d.t,d.c,d.n,d.o,d.p,d.notas,d.reg,d.finca,d.prod,d.var].join(" "));return d})
+    .filter(d=>d.n&&d.pr>0);
+}
+function fechaVieja(txt){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(txt||"");if(!m)return false;return (Date.now()-new Date(+m[3],+m[2]-1,+m[1]))/864e5>3}
 
-    async function loadCoffees() {
-      try {
-        const response = await fetch('cafes_db.csv');
-        const data = await response.text();
-        
-        // Parsear CSV separado por punto y coma
-        const rows = data.split('\n').filter(row => row.trim() !== '');
-        const headers = rows[0].split(';');
-        const grid = document.getElementById('coffee-grid');
-        
-        for (let i = 1; i < rows.length; i++) {
-          const cols = rows[i].split(';');
-          if (cols.length < 10) continue; // Evitar líneas vacías o rotas
-          
-          const coffee = {
-            tostador: cols[0] || 'Desconocido',
-            nombre: cols[2],
-            precio: parseFloat(cols[3] || 0).toFixed(2),
-            gramos: cols[4] || '250',
-            origen: (cols[5] || 'BLEND').toUpperCase(),
-            proceso: (cols[6] || 'LAVADO').toUpperCase(),
-            notas: cols[7] || 'Sin notas descriptivas',
-            sca: cols[8] ? `SCA ${cols[8]}` : '',
-            url: cols[9],
-            disponible: cols[11] === '1'
-          };
-
-          if (!coffee.disponible) continue;
-
-          // Asignar colores aleatorios del diseño pop art para mantener la estética
-          const mainColor = COLORS[i % COLORS.length];
-          const secondaryColor = COLORS[(i + 1) % COLORS.length];
-3. Mover el origen a la descripción (HTML dinámico)
-
-Sustituye el bloque donde se parsean y generan los artículos (article.innerHTML) por el siguiente código. Esto elimina la etiqueta gigante del header de la imagen y coloca el origen con su bandera dentro de los tags de la descripción, descartando cualquier texto basura:
-JavaScript
-
-          const origenesReales = obtenerOrigenesLimpios(cols[5]);
-          let tagsOrigen = '';
-          
-          if (origenesReales.length > 0) {
-            tagsOrigen = origenesReales.map(pais => {
-              // Capitalizar correctamente el nombre (ej. "Etiopía")
-              const nombreBonito = pais.charAt(0) + pais.slice(1).toLowerCase();
-              return `<span class="tag">${FLAGS[pais]} ${nombreBonito}</span>`;
-            }).join('');
-          } else if ((cols[5] || '').toUpperCase().includes('BLEND')) {
-            // Opcional: mostrar un icono genérico si detectamos un Blend real
-            tagsOrigen = `<span class="tag">🌍 Blend</span>`; 
-          }
-
-          const article = document.createElement('article');
-          article.className = 'coffee-card';
-          article.innerHTML = `
-            <div class="card-header-art" style="background: ${mainColor};">
-              <div class="art-shape-1" style="background: ${secondaryColor};"></div>
-              <div class="art-shape-2"></div>
-              <!-- La etiqueta central ha sido eliminada -->
-            </div>
-            <div class="card-body">
-              <span class="roaster-name">${coffee.tostador}</span>
-              <h2 class="coffee-title">${coffee.nombre}</h2>
-              <div class="tags-container">
-                ${tagsOrigen}
-                <span class="tag" style="background: ${secondaryColor};">${coffee.proceso}</span>
-                <span class="tag">${coffee.gramos}g</span>
-                ${coffee.sca ? `<span class="tag">${coffee.sca}</span>` : ''}
-              </div>
-              <div class="notes-box">
-                ${coffee.notas.split(',').slice(0,3).join(' · ')}
-              </div>
-              <div class="card-footer">
-                <span class="price">${coffee.precio}€</span>
-                <a href="${coffee.url}" target="_blank" class="btn-buy">Ver Café</a>
-              </div>
-            </div>
-          `;
-          grid.appendChild(article);
-        }
-      } catch (error) {
-        console.error('Error cargando los cafés:', error);
-      }
-    }
-
-    loadCoffees();
-  </script>
-
+function filtrar(){
+  const q=sa($("q").value).trim().split(/\s+/).filter(Boolean),o=$("origen").value,c=$("ciudad").value,m=$("metodo").value;
+  const sc=+$("scav").value,pm=+$("pmax").value,pmMax=+$("pmax").max;
+  $("scavv").textContent=sc<=80?"cualquiera":sc;$("pmaxv").textContent=pm>=pmMax?"sin límite":pm+" €";
+  let r=D.filter(d=>q.every(w=>d.hay.includes(w))&&(!o||d.o===o)&&(!c||d.c===c)
+    &&(!m||!d.mt.length||d.mt.includes(m))&&(sc<=80||(d.sca!=null&&d.sca>=sc))&&(pm>=pmMax||d.pk<=pm)
+    &&(!$("stock").checked||d.s)&&[...sel].every(n=>d.nf.includes(n))&&[...pre].every(k=>PRESETS[k].t(d)));
+  const k=$("orden").value;
+  r.sort(k==="pd"?(a,b)=>b.pk-a.pk:k==="sca"?(a,b)=>(b.sca||0)-(a.sca||0):k==="az"?(a,b)=>a.n.localeCompare(b.n,"es"):(a,b)=>a.pk-b.pk);
+  return r;
+}
+function tarjeta(d){
+  const col=ARTE[(d.t||"").length%3],flag=FL[d.o]?`<span class="flag" aria-hidden="true">${FL[d.o]}</span>`:"";
+  const arte=d.img?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
+  const tags=(!d.o&&/blend/i.test(d.n)?`<span class="tag t">Blend</span>`:"")+(d.p?`<span class="tag y">${esc(d.p)}</span>`:"")+(d.g?`<span class="tag">${d.g} g</span>`:"")+(d.sca!=null?`<span class="tag t">SCA ${d.sca}</span>`:"")+d.mt.slice(0,2).map(x=>`<span class="tag">${esc(x)}</span>`).join("");
+  const nt=d.notas||d.nf.join(" · ");
+  const origen=d.o?`<div class="origen">${flag} ${esc(d.o)}${d.reg?`<small> · ${esc(d.reg)}</small>`:""}</div>`:"";
+  const sub=(d.p250&&d.g!==250?`<span class="sub">≈ ${eur(d.p250)} € / 250 g</span>`:"")+(fechaVieja(d.act)?`<span class="sub">Precio revisado el ${esc(d.act)}</span>`:"");
+  return `<article class="coffee-card${d.s?"":" off"}"><div class="card-header-art" style="background:${col}">${arte}</div>
+  <div class="card-body"><span class="roaster-name">${esc(d.t)}${d.c?" · "+esc(d.c):""}</span><h2 class="coffee-title">${esc(d.n)}</h2>${origen}
+  <div class="tags-container">${tags}</div>
+  <div class="notes-box${nt?"":" vacio"}">${nt?esc(nt.length>150?nt.slice(0,147)+"…":nt):"Sin notas de cata indicadas"}</div>
+  <div class="card-footer"><span class="price">${eur(d.pr)}€${d.g?`<small>/ ${d.g} g</small>`:""}${sub}</span>
+  <a href="${esc(d.aff)}" class="btn-buy${d.s?"":" agotado"}" target="_blank" rel="${d.af?"sponsored ":""}noopener">${d.s?"Ver Café":"Agotado"}</a></div></div></article>`;
+}
+function render(){
+  const r=filtrar(),tot=r.length;
+  $("count").textContent=tot+(tot===1?" café encontrado":" cafés encontrados");
+  $("grid").innerHTML=tot?r.slice(0,show).map(tarjeta).join(""):`<div class="empty">Ni un solo grano con esos filtros. Quita alguno, que no somos tan exigentes.</div>`;
+  $("more").style.display=tot>show?"block":"none";
+}
+function nuevaBusqueda(){show=24;render()}
+function iniciar(){
+  $("nTost").textContent="+"+new Set(D.map(d=>d.t)).size+" tostadores";
+  [...new Set(D.map(d=>d.o).filter(Boolean))].sort().forEach(o=>$("origen").add(new Option((FL[o]?FL[o]+" ":"")+o,o)));
+  [...new Set(D.map(d=>d.c).filter(Boolean))].sort().forEach(c=>$("ciudad").add(new Option(c,c)));
+  const ps=D.map(d=>d.pk).filter(Boolean).sort((a,b)=>a-b),p95=ps[Math.floor(ps.length*.95)]||100;
+  $("pmax").max=Math.min(150,Math.max(20,Math.ceil(p95)));$("pmax").value=$("pmax").max;
+  if(!D.some(d=>d.sca!=null))$("scaf").style.display="none";
+  render();
+}
+Object.entries(PRESETS).forEach(([k,p])=>{const b=document.createElement("span");b.className="filter-chip";b.textContent=p.l;b.setAttribute("role","button");b.setAttribute("tabindex","0");b.setAttribute("aria-pressed","false");
+  const t=()=>{pre.has(k)?pre.delete(k):pre.add(k);b.setAttribute("aria-pressed",pre.has(k));nuevaBusqueda()};
+  b.addEventListener("click",t);b.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();t()}});$("presets").appendChild(b)});
+NOTAS.forEach((n,ix)=>{const b=document.createElement("button");b.className="chip"+(ix>=10?" extra":"");b.textContent=n;b.setAttribute("aria-pressed","false");
+  b.addEventListener("click",()=>{sel.has(n)?sel.delete(n):sel.add(n);b.setAttribute("aria-pressed",sel.has(n));nuevaBusqueda()});$("notas").appendChild(b)});
+const tg=document.createElement("button");tg.className="link";tg.textContent="Ver todas las notas";
+tg.addEventListener("click",()=>{const a=$("notas").classList.toggle("all");tg.textContent=a?"Ver menos":"Ver todas las notas"});$("notas").after(tg);
+["q","origen","ciudad","metodo","scav","pmax","stock","orden"].forEach(id=>$(id).addEventListener("input",nuevaBusqueda));
+$("btn").addEventListener("click",nuevaBusqueda);
+$("q").addEventListener("keydown",e=>{if(e.key==="Enter")nuevaBusqueda()});
+$("more").addEventListener("click",()=>{show+=24;render()});
+$("reset").addEventListener("click",()=>{$("q").value="";["origen","ciudad","metodo"].forEach(i=>$(i).value="");$("scav").value=80;$("pmax").value=$("pmax").max;$("stock").checked=false;
+  sel.clear();pre.clear();document.querySelectorAll(".chip,.filter-chip").forEach(c=>c.setAttribute("aria-pressed","false"));nuevaBusqueda()});
+if(window.innerWidth<700)$("panel").open=false;
+fetch("cafes.csv",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>{D=aObjetos(parseCSV(t));iniciar()},
+  ()=>{$("nTost").textContent="Sin datos";$("count").textContent="";$("grid").innerHTML='<div class="empty">Aún no hay cafés cargados.</div>'});
+fetch("estado.json",{cache:"no-cache"}).then(r=>r.json()).then(e=>{$("upd").textContent="Datos actualizados el "+new Date(e.fecha).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})+". "}).catch(()=>{});
+</script>
 </body>
 </html>
