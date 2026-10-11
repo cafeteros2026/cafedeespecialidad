@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buscador de Café Especial | Si existe, está aquí</title>
+  <title>Café Radar · Buscador de cafés de especialidad | Si existe, está aquí</title>
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     :root{--bg:#FFF8F0;--ink:#1E1B18;--coral:#FF5A36;--teal:#3ABEFF;--yellow:#FFD166;--gold:#C8963E;--card-bg:#FFF;
       --border-thick:3px solid var(--ink);--shadow-pop:5px 5px 0 var(--ink);--shadow-hover:8px 8px 0 var(--ink)}
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;line-height:1.5;padding:20px}
     button,select,input{font-family:inherit;color:var(--ink)}
-    header{max-width:1200px;margin:0 auto 40px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 25px;background:var(--yellow);border:var(--border-thick);box-shadow:var(--shadow-pop);border-radius:16px}
-    .logo{font-family:'Bricolage Grotesque',sans-serif;font-size:1.8rem;font-weight:800;text-transform:uppercase;letter-spacing:-1px}
-    .badge-header{background:var(--coral);color:#FFF;padding:6px 14px;border:var(--border-thick);border-radius:50px;font-weight:800;font-size:.85rem;transform:rotate(-2deg);white-space:nowrap}
+    header{max-width:1200px;margin:0 auto 40px;position:relative;display:flex;justify-content:center;align-items:center;padding:26px 25px;background:var(--yellow);border:var(--border-thick);box-shadow:var(--shadow-pop);border-radius:16px}
+    .brand{display:block;width:min(540px,80vw);height:auto}
+    .badge-header{position:absolute;top:-16px;right:22px;background:var(--coral);color:#FFF;padding:6px 14px;border:var(--border-thick);border-radius:50px;font-weight:800;font-size:.85rem;transform:rotate(3deg);white-space:nowrap}
+    @media(max-width:640px){header{padding:34px 18px 22px}.badge-header{right:50%;transform:translateX(50%) rotate(-2deg)}}
     .hero{max-width:1200px;margin:0 auto 30px;text-align:center;padding:30px 20px}
     .hero-tag{display:inline-block;background:var(--teal);border:var(--border-thick);padding:6px 16px;border-radius:20px;font-weight:800;font-size:.9rem;box-shadow:3px 3px 0 var(--ink);margin-bottom:20px;transform:rotate(1.5deg)}
     .hero h1{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(2.8rem,7vw,5.2rem);line-height:.95;font-weight:800;text-transform:uppercase;margin-bottom:20px;letter-spacing:-2px}
@@ -25,10 +27,6 @@
     .search-input{flex:1;min-width:0;border:none;outline:none;font-size:1.1rem;font-weight:700;padding:10px 15px;background:transparent}
     .search-btn{background:var(--coral);color:#fff;border:var(--border-thick);padding:12px 28px;font-family:'Bricolage Grotesque',sans-serif;font-size:1.2rem;font-weight:800;border-radius:10px;cursor:pointer;transition:all .15s;box-shadow:3px 3px 0 var(--ink)}
     .search-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
-    .filters{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;max-width:900px;margin:25px auto 0}
-    .filter-chip{background:#FFF;border:var(--border-thick);padding:6px 14px;border-radius:30px;font-weight:700;font-size:.9rem;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:transform .1s}
-    .filter-chip:hover{background:var(--yellow);transform:translateY(-2px)}
-    .filter-chip[aria-pressed=true]{background:var(--coral);color:#fff}
     .panel{max-width:1200px;margin:0 auto;background:#FFF;border:var(--border-thick);border-radius:16px;box-shadow:var(--shadow-pop)}
     .panel summary{cursor:pointer;list-style:none;padding:14px 22px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.2rem;text-transform:uppercase}
     .panel summary::-webkit-details-marker{display:none}
@@ -56,7 +54,7 @@
     .art-shape-1{position:absolute;width:100px;height:100px;background:var(--yellow);border:var(--border-thick);border-radius:50%;top:-20px;left:-20px}
     .art-shape-2{position:absolute;width:0;height:0;border-left:50px solid transparent;border-right:50px solid transparent;border-bottom:90px solid var(--coral);bottom:-10px;right:-10px;transform:rotate(15deg)}
     .origen{font-weight:800;font-size:.95rem;margin:-6px 0 12px}.origen small{font-weight:600;opacity:.7}
-    .flag{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;margin-right:4px}
+    .flagimg{width:22px;height:16px;object-fit:cover;border:2px solid var(--ink);border-radius:3px;vertical-align:-4px;margin-right:7px;box-sizing:content-box;background:#fff}
     .card-body{padding:20px;display:flex;flex-direction:column;flex-grow:1}
     .roaster-name{font-size:.85rem;font-weight:800;text-transform:uppercase;color:var(--coral);letter-spacing:.5px}
     .coffee-title{font-family:'Bricolage Grotesque',sans-serif;font-size:1.5rem;line-height:1.1;margin:4px 0 12px}
@@ -79,7 +77,7 @@
 </head>
 <body>
   <header>
-    <div class="logo">CaféRadar ☕</div>
+    <a href="./" aria-label="Café Radar, inicio"><img class="brand" src="logo-horizontal.png" alt="Café Radar · buscador de cafés de especialidad" width="960" height="305"></a>
     <div class="badge-header" id="nTost">Cargando tostadores…</div>
   </header>
 
@@ -91,7 +89,6 @@
       <input type="text" id="q" class="search-input" placeholder="Origen, tostador, notas (ej. Etiopía, Lavado, Melocotón)..." autocomplete="off">
       <button class="search-btn" id="btn">BUSCAR</button>
     </div>
-    <div class="filters" id="presets"></div>
   </section>
 
   <details class="panel" id="panel" open>
@@ -125,21 +122,15 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const num=v=>{const x=parseFloat(String(v==null?"":v).replace(",","."));return isNaN(x)?null:x};
 const sa=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 const eur=v=>(+v||0).toFixed(2).replace(".",",");
-const FL={"Etiopía":"🇪🇹","Kenia":"🇰🇪","Colombia":"🇨🇴","Brasil":"🇧🇷","Guatemala":"🇬🇹","Costa Rica":"🇨🇷","Perú":"🇵🇪","Honduras":"🇭🇳","El Salvador":"🇸🇻","Panamá":"🇵🇦","Ruanda":"🇷🇼","Burundi":"🇧🇮","Uganda":"🇺🇬","Venezuela":"🇻🇪","Nicaragua":"🇳🇮","México":"🇲🇽","Indonesia":"🇮🇩","Tanzania":"🇹🇿","Bolivia":"🇧🇴","Ecuador":"🇪🇨","Yemen":"🇾🇪","India":"🇮🇳","Papúa Nueva Guinea":"🇵🇬","Tailandia":"🇹🇭","Jamaica":"🇯🇲","Vietnam":"🇻🇳","Laos":"🇱🇦","Malawi":"🇲🇼","Zambia":"🇿🇲","República Dominicana":"🇩🇴","Estados Unidos":"🇺🇸","China":"🇨🇳","Taiwán":"🇹🇼","Nepal":"🇳🇵","Camerún":"🇨🇲","Costa de Marfil":"🇨🇮","Mozambique":"🇲🇿","Madagascar":"🇲🇬","Haití":"🇭🇹","Paraguay":"🇵🇾","Santo Tomé y Príncipe":"🇸🇹","Congo":"🇨🇩","Filipinas":"🇵🇭","Timor Oriental":"🇹🇱","Myanmar":"🇲🇲"};
+const ISO={"Etiopía":"et","Kenia":"ke","Colombia":"co","Brasil":"br","Guatemala":"gt","Costa Rica":"cr","Perú":"pe","Honduras":"hn","El Salvador":"sv","Panamá":"pa","Ruanda":"rw","Burundi":"bi","Uganda":"ug","Venezuela":"ve","Nicaragua":"ni","México":"mx","Indonesia":"id","Tanzania":"tz","Bolivia":"bo","Ecuador":"ec","Yemen":"ye","India":"in","Papúa Nueva Guinea":"pg","Tailandia":"th","Jamaica":"jm","Vietnam":"vn","Laos":"la","Malawi":"mw","Zambia":"zm","República Dominicana":"do","Estados Unidos":"us","Congo":"cd","Filipinas":"ph","Timor Oriental":"tl","Myanmar":"mm","China":"cn","Taiwán":"tw","Nepal":"np","Camerún":"cm","Costa de Marfil":"ci","Mozambique":"mz","Madagascar":"mg","Haití":"ht","Paraguay":"py","Santo Tomé y Príncipe":"st"};
+const NOCAFE=/\bt[eé]s?\b|\bte (?:verde|negro|rojo|blanco|azul|chai|earl|oolong|matcha)|\btea\b|infusi[oó]n|tisana|matcha|rooibos|\bchai\b|kombucha|yerba mate|oolong|sencha|hojicha|earl grey|darjeeling|pu-?erh/i;
 const ALIAS={"Estados Unidos":["eeuu","ee.uu","estados unidos","united states","hawai","kona"],"Etiopía":["ethiopia"],"Kenia":["kenya"],"Brasil":["brazil"],"Ruanda":["rwanda"],"Tailandia":["thailand"],"Filipinas":["philippines"],"Papúa Nueva Guinea":["papua"],"Timor Oriental":["timor"],"China":["yunnan"],"Taiwán":["taiwan"]};
 function paisWeb(raw){const s=sa(raw);if(!s)return "";
-  for(const p of Object.keys(FL)){for(const c of [sa(p),...(ALIAS[p]||[])]){if(new RegExp("(^|[^a-z])"+c.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|[^a-z])").test(s))return p}}
+  for(const p of Object.keys(ISO)){for(const c of [sa(p),...(ALIAS[p]||[])]){if(new RegExp("(^|[^a-z])"+c.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|[^a-z])").test(s))return p}}
   return ""}
 const NOTAS=["Frutos rojos","Cítrico","Fruta tropical","Fruta de hueso","Floral","Té","Chocolate","Cacao","Caramelo","Miel","Manzana y pera","Uva y vino","Panela","Frutos secos","Vainilla","Especias","Herbal","Madera y tabaco","Mermelada","Cereal y pan"];
-const FRUTA=["Frutos rojos","Cítrico","Fruta tropical","Fruta de hueso","Manzana y pera","Uva y vino","Mermelada"];
-const PRESETS={
-  fruta:{l:"🍓 Notas a fruta",t:d=>d.nf.some(n=>FRUTA.includes(n))},
-  choco:{l:"🍫 Chocolate y frutos secos",t:d=>d.nf.some(n=>["Chocolate","Cacao","Frutos secos"].includes(n))},
-  versatil:{l:"⚡ Espresso y filtro",t:d=>!d.mt.length||(d.mt.includes("Espresso")&&d.mt.includes("Filtro"))},
-  sca86:{l:"🏆 +86 SCA",t:d=>d.sca!=null&&d.sca>=86},
-  exp:{l:"🌱 Procesos experimentales",t:d=>/anaer|fermenta|macera|koji|carb[oó]nic|t[eé]rmic|l[aá]ctic|experiment|infus/i.test(d.p)}};
 const ARTE=["var(--teal)","var(--yellow)","var(--coral)"];
-let D=[],show=24;const sel=new Set(),pre=new Set();
+let D=[],show=24;const sel=new Set();
 
 function parseCSV(t){
   t=t.replace(/^\uFEFF/,"");const rows=[];let row=[],cur="",q=false;
@@ -161,7 +152,7 @@ function aObjetos(rows){
       aff:o.EnlaceCompra||o.URL,af:o.Afiliado==="1",reg:o.Region||"",finca:o.Finca||"",prod:o.Productor||"",var:o.Varietal||"",alt:o.Altitud||""};
     d.p250=g&&pr?pr*250/g:null;d.pk=d.p250!=null?d.p250:pr;
     d.hay=sa([d.t,d.c,d.n,d.o,d.p,d.notas,d.reg,d.finca,d.prod,d.var].join(" "));return d})
-    .filter(d=>d.n&&d.pr>0);
+    .filter(d=>d.n&&d.pr>0&&!NOCAFE.test(d.n));
 }
 function fechaVieja(txt){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(txt||"");if(!m)return false;return (Date.now()-new Date(+m[3],+m[2]-1,+m[1]))/864e5>3}
 
@@ -171,13 +162,13 @@ function filtrar(){
   $("scavv").textContent=sc<=80?"cualquiera":sc;$("pmaxv").textContent=pm>=pmMax?"sin límite":pm+" €";
   let r=D.filter(d=>q.every(w=>d.hay.includes(w))&&(!o||d.o===o)&&(!c||d.c===c)
     &&(!m||!d.mt.length||d.mt.includes(m))&&(sc<=80||(d.sca!=null&&d.sca>=sc))&&(pm>=pmMax||d.pk<=pm)
-    &&(!$("stock").checked||d.s)&&[...sel].every(n=>d.nf.includes(n))&&[...pre].every(k=>PRESETS[k].t(d)));
+    &&(!$("stock").checked||d.s)&&[...sel].every(n=>d.nf.includes(n)));
   const k=$("orden").value;
   r.sort(k==="pd"?(a,b)=>b.pk-a.pk:k==="sca"?(a,b)=>(b.sca||0)-(a.sca||0):k==="az"?(a,b)=>a.n.localeCompare(b.n,"es"):(a,b)=>a.pk-b.pk);
   return r;
 }
 function tarjeta(d){
-  const col=ARTE[(d.t||"").length%3],flag=FL[d.o]?`<span class="flag" aria-hidden="true">${FL[d.o]}</span>`:"";
+  const col=ARTE[(d.t||"").length%3],flag=ISO[d.o]?`<img class="flagimg" src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7/flags/4x3/${ISO[d.o]}.svg" alt="" width="22" height="16" loading="lazy" onerror="this.remove()">`:"";
   const arte=d.img?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
   const tags=(!d.o&&/blend/i.test(d.n)?`<span class="tag t">Blend</span>`:"")+(d.p?`<span class="tag y">${esc(d.p)}</span>`:"")+(d.g?`<span class="tag">${d.g} g</span>`:"")+(d.sca!=null?`<span class="tag t">SCA ${d.sca}</span>`:"")+d.mt.slice(0,2).map(x=>`<span class="tag">${esc(x)}</span>`).join("");
   const nt=d.notas||d.nf.join(" · ");
@@ -199,16 +190,13 @@ function render(){
 function nuevaBusqueda(){show=24;render()}
 function iniciar(){
   $("nTost").textContent="+"+new Set(D.map(d=>d.t)).size+" tostadores";
-  [...new Set(D.map(d=>d.o).filter(Boolean))].sort().forEach(o=>$("origen").add(new Option((FL[o]?FL[o]+" ":"")+o,o)));
+  [...new Set(D.map(d=>d.o).filter(Boolean))].sort().forEach(o=>$("origen").add(new Option(o,o)));
   [...new Set(D.map(d=>d.c).filter(Boolean))].sort().forEach(c=>$("ciudad").add(new Option(c,c)));
   const ps=D.map(d=>d.pk).filter(Boolean).sort((a,b)=>a-b),p95=ps[Math.floor(ps.length*.95)]||100;
   $("pmax").max=Math.min(150,Math.max(20,Math.ceil(p95)));$("pmax").value=$("pmax").max;
   if(!D.some(d=>d.sca!=null))$("scaf").style.display="none";
   render();
 }
-Object.entries(PRESETS).forEach(([k,p])=>{const b=document.createElement("span");b.className="filter-chip";b.textContent=p.l;b.setAttribute("role","button");b.setAttribute("tabindex","0");b.setAttribute("aria-pressed","false");
-  const t=()=>{pre.has(k)?pre.delete(k):pre.add(k);b.setAttribute("aria-pressed",pre.has(k));nuevaBusqueda()};
-  b.addEventListener("click",t);b.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();t()}});$("presets").appendChild(b)});
 NOTAS.forEach((n,ix)=>{const b=document.createElement("button");b.className="chip"+(ix>=10?" extra":"");b.textContent=n;b.setAttribute("aria-pressed","false");
   b.addEventListener("click",()=>{sel.has(n)?sel.delete(n):sel.add(n);b.setAttribute("aria-pressed",sel.has(n));nuevaBusqueda()});$("notas").appendChild(b)});
 const tg=document.createElement("button");tg.className="link";tg.textContent="Ver todas las notas";
@@ -218,7 +206,7 @@ $("btn").addEventListener("click",nuevaBusqueda);
 $("q").addEventListener("keydown",e=>{if(e.key==="Enter")nuevaBusqueda()});
 $("more").addEventListener("click",()=>{show+=24;render()});
 $("reset").addEventListener("click",()=>{$("q").value="";["origen","ciudad","metodo"].forEach(i=>$(i).value="");$("scav").value=80;$("pmax").value=$("pmax").max;$("stock").checked=false;
-  sel.clear();pre.clear();document.querySelectorAll(".chip,.filter-chip").forEach(c=>c.setAttribute("aria-pressed","false"));nuevaBusqueda()});
+  sel.clear();document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));nuevaBusqueda()});
 if(window.innerWidth<700)$("panel").open=false;
 fetch("cafes.csv",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>{D=aObjetos(parseCSV(t));iniciar()},
   ()=>{$("nTost").textContent="Sin datos";$("count").textContent="";$("grid").innerHTML='<div class="empty">Aún no hay cafés cargados.</div>'});
