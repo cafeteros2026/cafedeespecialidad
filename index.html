@@ -76,7 +76,6 @@
     .btn-apoyo{display:inline-block;margin:14px 0 0;background:var(--yellow);color:var(--ink);border:var(--border-thick);padding:8px 16px;border-radius:10px;font-weight:800;font-size:.9rem;text-decoration:none;box-shadow:2px 2px 0 var(--ink)}
     .btn-apoyo:hover{background:var(--coral);color:#fff}
     
-    /* Estilos actualizados para el pie de página legal */
     footer{max-width:1200px;margin:30px auto 0;padding:20px 0;border-top:var(--border-thick);font-size:.85rem;font-weight:600}
     .footer-content{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;margin-top:10px}
     .legal-links{display:flex;gap:15px;flex-wrap:wrap}
@@ -123,13 +122,11 @@
   <main class="grid-container" id="grid"></main>
   <button class="more" id="more" style="display:none">Mostrar más cafés</button>
 
-  <!-- PIE DE PÁGINA ACTUALIZADO CON LOS REQUISITOS LEGALES -->
   <footer>
     <span id="upd"></span>
     <div class="footer-content">
       <span style="opacity: 0.85;">Precios y disponibilidad orientativos. Confírmalos en la web de cada tostador.</span>
       <div class="legal-links">
-        <!-- Puedes enlazar a secciones de tu web o páginas independientes (ej. aviso-legal.html) -->
         <a href="#aviso-legal" title="CAFERADAR - Contacto:caferadar@outlook.es">[Aviso Legal]</a>
         <a href="#privacidad" title="Indica el tratamiento de datos y herramientas de análisis como Analytics">[Política de Privacidad]</a>
         <a href="#cookies" title="Información sobre el uso de cookies en la web">[Política de Cookies]</a>
@@ -139,11 +136,10 @@
   </footer>
 
 <script>
-// Pega aquí la URL de Apps Script que copiaste en el paso anterior
 const TRACKING_URL = "https://script.google.com/macros/s/AKfycbySifqtxCsj6abkWamm8y3gLWwpfyciBvF-v92LPbMVQol4dJtkxbnUAn6hyGx1QfA1aQ/exec";
 
 function registrarClic(tostador, cafe, url) {
-  if (!TRACKING_URL || TRACKING_URL.includes("TU_URL")) return;
+  if (!TRACKING_URL || TRACKING_URL.includes("https://script.google.com/macros/s/AKfycbySifqtxCsj6abkWamm8y3gLWwpfyciBvF-v92LPbMVQol4dJtkxbnUAn6hyGx1QfA1aQ/exec")) return;
   fetch(TRACKING_URL, {
     method: "POST",
     mode: "no-cors",
@@ -151,19 +147,22 @@ function registrarClic(tostador, cafe, url) {
     body: JSON.stringify({ tostador: tostador, cafe: cafe, url: url })
   }).catch(err => console.log("Error de registro:", err));
 }
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num=v=>{const x=parseFloat(String(v==null?"":v).replace(",","."));return isNaN(x)?null:x};
 const sa=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 const eur=v=>(+v||0).toFixed(2).replace(".",",");
 const ISO={"Etiopía":"et","Kenia":"ke","Colombia":"co","Brasil":"br","Guatemala":"gt","Costa Rica":"cr","Perú":"pe","Honduras":"hn","El Salvador":"sv","Panamá":"pa","Ruanda":"rw","Burundi":"bi","Uganda":"ug","Venezuela":"ve","Nicaragua":"ni","México":"mx","Indonesia":"id","Tanzania":"tz","Bolivia":"bo","Ecuador":"ec","Yemen":"ye","India":"in","Papúa Nueva Guinea":"pg","Tailandia":"th","Jamaica":"jm","Vietnam":"vn","Laos":"la","Malawi":"mw","Zambia":"zm","República Dominicana":"do","Estados Unidos":"us","Congo":"cd","Filipinas":"ph","Timor Oriental":"tl","Myanmar":"mm","China":"cn","Taiwán":"tw","Nepal":"np","Camerún":"cm","Costa de Marfil":"ci","Mozambique":"mz","Madagascar":"mg","Haití":"ht","Paraguay":"py","Santo Tomé y Príncipe":"st"};
-const ENLACE_APOYO="";   // pega aquí tu enlace de Ko-fi, Buy Me a Coffee o PayPal para mostrar el botón "Apoya el proyecto"
+const ENLACE_APOYO="";
 const MONO=/\b(?:dip|drip|bags?|bolsitas?|sobres?|sachets?|immersion|inmersi[oó]n|monodosis|unidosis|muestras?|samples?|stick)\b/i;
 const NOCAFE=/\bt[eé]s?\b|\bte (?:verde|negro|rojo|blanco|azul|chai|earl|oolong|matcha)|\btea\b|infusi[oó]n|tisana|matcha|rooibos|\bchai\b|kombucha|yerba mate|oolong|sencha|hojicha|earl grey|darjeeling|pu-?erh/i;
 const ALIAS={"Estados Unidos":["eeuu","ee.uu","estados unidos","united states","hawai","kona"],"Etiopía":["ethiopia"],"Kenia":["kenya"],"Brasil":["brazil"],"Ruanda":["rwanda"],"Tailandia":["thailand"],"Filipinas":["philippines"],"Papúa Nueva Guinea":["papua"],"Timor Oriental":["timor"],"China":["yunnan"],"Taiwán":["taiwan"]};
+
 function paisWeb(raw){const s=sa(raw);if(!s)return "";
   for(const p of Object.keys(ISO)){for(const c of [sa(p),...(ALIAS[p]||[])]){if(new RegExp("(^|[^a-z])"+c.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|[^a-z])").test(s))return p}}
   return ""}
+
 const NOTAS=["Frutos rojos","Cítrico","Fruta tropical","Fruta de hueso","Floral","Té","Chocolate","Cacao","Caramelo","Miel","Manzana y pera","Uva y vino","Panela","Frutos secos","Vainilla","Especias","Herbal","Madera y tabaco","Mermelada","Cereal y pan"];
 const ARTE=["var(--teal)","var(--yellow)","var(--coral)"];
 let D=[],show=24;const sel=new Set();
@@ -179,6 +178,7 @@ function parseCSV(t){
   if(cur!==""||row.length){row.push(cur);rows.push(row)}
   return rows.filter(r=>r.length>1||r[0]);
 }
+
 function aObjetos(rows){
   const h=rows[0];
   return rows.slice(1).map((r,i)=>{const o={};h.forEach((k,j)=>o[k]=r[j]);
@@ -190,6 +190,7 @@ function aObjetos(rows){
     d.hay=sa([d.t,d.c,d.n,d.o,d.p,d.notas,d.reg,d.finca,d.prod,d.var].join(" "));return d})
     .filter(d=>d.n&&d.pr>0&&!NOCAFE.test(d.n));
 }
+
 function fechaVieja(txt){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(txt||"");if(!m)return false;return (Date.now()-new Date(+m[3],+m[2]-1,+m[1]))/864e5>3}
 
 function filtrar(){
@@ -203,6 +204,7 @@ function filtrar(){
   r.sort(k==="pd"?(a,b)=>(a.mono-b.mono)||(b.pk-a.pk):k==="sca"?(a,b)=>(b.sca||0)-(a.sca||0):k==="az"?(a,b)=>a.n.localeCompare(b.n,"es"):(a,b)=>(a.mono-b.mono)||(a.pk-b.pk));
   return r;
 }
+
 function tarjeta(d){
   const col=ARTE[(d.t||"").length%3],flag=ISO[d.o]?`<img class="flagimg" src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7/flags/4x3/${ISO[d.o]}.svg" alt="" width="22" height="16" loading="lazy" onerror="this.remove()">`:"";
   const arte=d.img?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
@@ -210,35 +212,29 @@ function tarjeta(d){
   const nt=d.notas||d.nf.join(" · ");
   const origen=d.o?`<div class="origen">${flag} ${esc(d.o)}${d.reg?`<small> · ${esc(d.reg)}</small>`:""}</div>`:"";
   const sub=(d.mono?`<span class="sub">Dosis o muestra: no se compara por 250 g</span>`:"")+(d.p250&&d.g!==250?`<span class="sub">≈ ${eur(d.p250)} € / 250 g</span>`:"")+(fechaVieja(d.act)?`<span class="sub">Precio revisado el ${esc(d.act)}</span>`:"");
-  return `<article class="coffee-card${d.s?"":" off"}"><div class="card-header-art" style="background:${col}">${arte}</div>
-  <div class="card-body"><span class="roaster-name">${esc(d.t)}${d.c?" · "+esc(d.c):""}</span><h2 class="coffee-title">${esc(d.n)}</h2>${origen}
-  <div class="tags-container">${tags}</div>
-  <div class="notes-box${nt?"":" vacio"}">${nt?esc(nt.length>150?nt.slice(0,147)+"…":nt):"Sin notas de cata indicadas"}</div>
-  <div class="card-footer"><span class="price">${eur(d.pr)}€${d.g?`<small>/ ${d.g} g</small>`:""}${sub}</span>
-  function tarjeta(d){
-  const col=ARTE[(d.t||"").length%3],flag=ISO[d.o]?`<img class="flagimg" src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7/flags/4x3/${ISO[d.o]}.svg" alt="" width="22" height="16" loading="lazy" onerror="this.remove()">`:"";
-  const arte=d.img?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
-  const tags=(d.mono?`<span class="tag t">Monodosis</span>`:"")+(!d.o&&/blend/i.test(d.n)?`<span class="tag t">Blend</span>`:"")+(d.p?`<span class="tag y">${esc(d.p)}</span>`:"")+(d.g?`<span class="tag">${d.g} g</span>`:"")+(d.sca!=null?`<span class="tag t">SCA ${d.sca}</span>`:"")+d.mt.slice(0,2).map(x=>`<span class="tag">${esc(x)}</span>`).join("");
-  const nt=d.notas||d.nf.join(" · ");
-  const origen=d.o?`<div class="origen">${flag} ${esc(d.o)}${d.reg?`<small> · ${esc(d.reg)}</small>`:""}</div>`:"";
-  const sub=(d.mono?`<span class="sub">Dosis o muestra: no se compara por 250 g</span>`:"")+(d.p250&&d.g!==250?`<span class="sub">≈ ${eur(d.p250)} € / 250 g</span>`:"")+(fechaVieja(d.act)?`<span class="sub">Precio revisado el ${esc(d.act)}</span>`:"");
   
-  // AQUÍ ESTÁ EL CAMBIO EN LA LÍNEA DEL BOTÓN DE COMPRA:
+  // Limpiamos comillas simples y dobles para evitar romper la llamada al JavaScript
+  const tLimpio = esc(d.t).replace(/'/g, "\\'");
+  const nLimpio = esc(d.n).replace(/'/g, "\\'");
+  const affLimpio = esc(d.aff).replace(/'/g, "\\'");
+
   return `<article class="coffee-card${d.s?"":" off"}"><div class="card-header-art" style="background:${col}">${arte}</div>
   <div class="card-body"><span class="roaster-name">${esc(d.t)}${d.c?" · "+esc(d.c):""}</span><h2 class="coffee-title">${esc(d.n)}</h2>${origen}
   <div class="tags-container">${tags}</div>
   <div class="notes-box${nt?"":" vacio"}">${nt?esc(nt.length>150?nt.slice(0,147)+"…":nt):"Sin notas de cata indicadas"}</div>
   <div class="card-footer"><span class="price">${eur(d.pr)}€${d.g?`<small>/ ${d.g} g</small>`:""}${sub}</span>
-  <a href="${esc(d.aff)}" class="btn-buy${d.s?"":" agotado"}" target="_blank" rel="${d.af?"sponsored ":""}noopener" onclick="registrarClic('${esc(d.t)}', '${esc(d.n)}', '${esc(d.aff)}')">${d.s?"Ver Café":"Agotado"}</a></div></div></article>`;
-};
+  <a href="${esc(d.aff)}" class="btn-buy${d.s?"":" agotado"}" target="_blank" rel="${d.af?"sponsored ":""}noopener" onclick="registrarClic('${tLimpio}', '${nLimpio}', '${affLimpio}')">${d.s?"Ver Café":"Agotado"}</a></div></div></article>`;
 }
+
 function render(){
   const r=filtrar(),tot=r.length;
   $("count").textContent=tot+(tot===1?" café encontrado":" cafés encontrados");
   $("grid").innerHTML=tot?r.slice(0,show).map(tarjeta).join(""):`<div class="empty">Ni un solo grano con esos filtros. Quita alguno, que no somos tan exigentes.</div>`;
   $("more").style.display=tot>show?"block":"none";
 }
+
 function nuevaBusqueda(){show=24;render()}
+
 function iniciar(){
   $("nTost").textContent="+"+new Set(D.map(d=>d.t)).size+" tostadores";
   if(ENLACE_APOYO)$("apoyo").innerHTML=`<br><a class="btn-apoyo" href="${esc(ENLACE_APOYO)}" target="_blank" rel="noopener">Apoya el proyecto con un café</a>`;
@@ -249,6 +245,7 @@ function iniciar(){
   if(!D.some(d=>d.sca!=null))$("scaf").style.display="none";
   render();
 }
+
 NOTAS.forEach((n,ix)=>{const b=document.createElement("button");b.className="chip"+(ix>=10?" extra":"");b.textContent=n;b.setAttribute("aria-pressed","false");
   b.addEventListener("click",()=>{sel.has(n)?sel.delete(n):sel.add(n);b.setAttribute("aria-pressed",sel.has(n));nuevaBusqueda()});$("notas").appendChild(b)});
 const tg=document.createElement("button");tg.className="link";tg.textContent="Ver todas las notas";
