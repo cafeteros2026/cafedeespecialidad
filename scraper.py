@@ -48,7 +48,7 @@ METODOS = {"Espresso":["espresso","expreso"],"Filtro":["filtro","v60","chemex","
  "Cold brew":["cold brew","cold-brew","coldbrew","infusión en frío"],
  "Superautomática":["superautomática","superautomatica","superautomáticas","bean to cup","máquinas automáticas"]}
 NO = ["taza","merch","camiseta","molinillo","cafetera","papel","v60","aeropress","gift","regalo","tote","curso",
-      "suscrip","pack","prensa","tetera","báscula","bascula","jarra","cápsula","capsula","sudadera","membresía","llavero","saco","sacos","edulcorante","bidón","detergente","cepillo","limpieza","limpiador","original beans","%","lapiz","tea","soporte","acero","interactiva","interactivo","bayeta","estuche","filtros","dynamite","digestiva","digestivo","té"]
+      "suscrip","pack","prensa","tetera","báscula","bascula","jarra","cápsula","capsula","sudadera","membresía","llavero","saco","sacos","edulcorante","bidón","detergente","cepillo","limpieza","limpiador","original beans","%","lapiz","tea","soporte","acero","interactiva","interactivo","bayeta","estuche","filtros","dynamite","digestiva","digestivo","té","descalcificación"]
 
 def antibot(r):
     h = {k.lower(): str(v).lower() for k, v in r.headers.items()}
