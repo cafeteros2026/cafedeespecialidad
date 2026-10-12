@@ -215,7 +215,22 @@ function tarjeta(d){
   <div class="tags-container">${tags}</div>
   <div class="notes-box${nt?"":" vacio"}">${nt?esc(nt.length>150?nt.slice(0,147)+"…":nt):"Sin notas de cata indicadas"}</div>
   <div class="card-footer"><span class="price">${eur(d.pr)}€${d.g?`<small>/ ${d.g} g</small>`:""}${sub}</span>
-  <a href="${esc(d.aff)}" class="btn-buy${d.s?"":" agotado"}" target="_blank" rel="${d.af?"sponsored ":""}noopener">${d.s?"Ver Café":"Agotado"}</a></div></div></article>`;
+  function tarjeta(d){
+  const col=ARTE[(d.t||"").length%3],flag=ISO[d.o]?`<img class="flagimg" src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7/flags/4x3/${ISO[d.o]}.svg" alt="" width="22" height="16" loading="lazy" onerror="this.remove()">`:"";
+  const arte=d.img?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
+  const tags=(d.mono?`<span class="tag t">Monodosis</span>`:"")+(!d.o&&/blend/i.test(d.n)?`<span class="tag t">Blend</span>`:"")+(d.p?`<span class="tag y">${esc(d.p)}</span>`:"")+(d.g?`<span class="tag">${d.g} g</span>`:"")+(d.sca!=null?`<span class="tag t">SCA ${d.sca}</span>`:"")+d.mt.slice(0,2).map(x=>`<span class="tag">${esc(x)}</span>`).join("");
+  const nt=d.notas||d.nf.join(" · ");
+  const origen=d.o?`<div class="origen">${flag} ${esc(d.o)}${d.reg?`<small> · ${esc(d.reg)}</small>`:""}</div>`:"";
+  const sub=(d.mono?`<span class="sub">Dosis o muestra: no se compara por 250 g</span>`:"")+(d.p250&&d.g!==250?`<span class="sub">≈ ${eur(d.p250)} € / 250 g</span>`:"")+(fechaVieja(d.act)?`<span class="sub">Precio revisado el ${esc(d.act)}</span>`:"");
+  
+  // AQUÍ ESTÁ EL CAMBIO EN LA LÍNEA DEL BOTÓN DE COMPRA:
+  return `<article class="coffee-card${d.s?"":" off"}"><div class="card-header-art" style="background:${col}">${arte}</div>
+  <div class="card-body"><span class="roaster-name">${esc(d.t)}${d.c?" · "+esc(d.c):""}</span><h2 class="coffee-title">${esc(d.n)}</h2>${origen}
+  <div class="tags-container">${tags}</div>
+  <div class="notes-box${nt?"":" vacio"}">${nt?esc(nt.length>150?nt.slice(0,147)+"…":nt):"Sin notas de cata indicadas"}</div>
+  <div class="card-footer"><span class="price">${eur(d.pr)}€${d.g?`<small>/ ${d.g} g</small>`:""}${sub}</span>
+  <a href="${esc(d.aff)}" class="btn-buy${d.s?"":" agotado"}" target="_blank" rel="${d.af?"sponsored ":""}noopener" onclick="registrarClic('${esc(d.t)}', '${esc(d.n)}', '${esc(d.aff)}')">${d.s?"Ver Café":"Agotado"}</a></div></div></article>`;
+};
 }
 function render(){
   const r=filtrar(),tot=r.length;
