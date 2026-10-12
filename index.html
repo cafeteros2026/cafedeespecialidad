@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Café Radar: busca y compara cafés de especialidad de tostadores españoles por origen, notas de cata, proceso, puntuación SCA y precio por 250 g.">
   <title>Café Radar · Buscador de cafés de especialidad | Si existe, está aquí</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -72,7 +73,15 @@
     .btn-buy.agotado{background:#DDD;pointer-events:none;box-shadow:none}
     .more{display:block;margin:0 auto 20px;background:var(--coral);color:#fff;border:var(--border-thick);padding:12px 28px;font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;font-weight:800;border-radius:12px;cursor:pointer;box-shadow:var(--shadow-pop)}
     .empty{grid-column:1/-1;text-align:center;font-weight:800;padding:40px;border:3px dashed var(--ink);border-radius:16px}
-    footer{max-width:1200px;margin:30px auto 0;padding-top:18px;border-top:var(--border-thick);font-size:.8rem;font-weight:600}
+    .btn-apoyo{display:inline-block;margin:14px 0 0;background:var(--yellow);color:var(--ink);border:var(--border-thick);padding:8px 16px;border-radius:10px;font-weight:800;font-size:.9rem;text-decoration:none;box-shadow:2px 2px 0 var(--ink)}
+    .btn-apoyo:hover{background:var(--coral);color:#fff}
+    
+    /* Estilos actualizados para el pie de página legal */
+    footer{max-width:1200px;margin:30px auto 0;padding:20px 0;border-top:var(--border-thick);font-size:.85rem;font-weight:600}
+    .footer-content{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;margin-top:10px}
+    .legal-links{display:flex;gap:15px;flex-wrap:wrap}
+    .legal-links a{color:var(--ink);text-decoration:underline;font-weight:700}
+    .legal-links a:hover{color:var(--coral)}
   </style>
 </head>
 <body>
@@ -114,7 +123,20 @@
   <main class="grid-container" id="grid"></main>
   <button class="more" id="more" style="display:none">Mostrar más cafés</button>
 
-  <footer><span id="upd"></span>Algunos enlaces son de afiliación: si compras a través de ellos podemos recibir una pequeña comisión, sin coste adicional para ti. Precios y disponibilidad orientativos: confírmalos en la web del tostador.</footer>
+  <!-- PIE DE PÁGINA ACTUALIZADO CON LOS REQUISITOS LEGALES -->
+  <footer>
+    <span id="upd"></span>
+    <div class="footer-content">
+      <span style="opacity: 0.85;">Precios y disponibilidad orientativos. Confírmalos en la web de cada tostador.</span>
+      <div class="legal-links">
+        <!-- Puedes enlazar a secciones de tu web o páginas independientes (ej. aviso-legal.html) -->
+        <a href="#aviso-legal" title="Edita con tu nombre o proyecto y datos de contacto">[Aviso Legal]</a>
+        <a href="#privacidad" title="Indica el tratamiento de datos y herramientas de análisis como Analytics">[Política de Privacidad]</a>
+        <a href="#cookies" title="Información sobre el uso de cookies en la web">[Política de Cookies]</a>
+      </div>
+    </div>
+    <span id="apoyo"></span>
+  </footer>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -123,6 +145,8 @@ const num=v=>{const x=parseFloat(String(v==null?"":v).replace(",","."));return i
 const sa=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 const eur=v=>(+v||0).toFixed(2).replace(".",",");
 const ISO={"Etiopía":"et","Kenia":"ke","Colombia":"co","Brasil":"br","Guatemala":"gt","Costa Rica":"cr","Perú":"pe","Honduras":"hn","El Salvador":"sv","Panamá":"pa","Ruanda":"rw","Burundi":"bi","Uganda":"ug","Venezuela":"ve","Nicaragua":"ni","México":"mx","Indonesia":"id","Tanzania":"tz","Bolivia":"bo","Ecuador":"ec","Yemen":"ye","India":"in","Papúa Nueva Guinea":"pg","Tailandia":"th","Jamaica":"jm","Vietnam":"vn","Laos":"la","Malawi":"mw","Zambia":"zm","República Dominicana":"do","Estados Unidos":"us","Congo":"cd","Filipinas":"ph","Timor Oriental":"tl","Myanmar":"mm","China":"cn","Taiwán":"tw","Nepal":"np","Camerún":"cm","Costa de Marfil":"ci","Mozambique":"mz","Madagascar":"mg","Haití":"ht","Paraguay":"py","Santo Tomé y Príncipe":"st"};
+const ENLACE_APOYO="";   // pega aquí tu enlace de Ko-fi, Buy Me a Coffee o PayPal para mostrar el botón "Apoya el proyecto"
+const MONO=/\b(?:dip|drip|bags?|bolsitas?|sobres?|sachets?|immersion|inmersi[oó]n|monodosis|unidosis|muestras?|samples?|stick)\b/i;
 const NOCAFE=/\bt[eé]s?\b|\bte (?:verde|negro|rojo|blanco|azul|chai|earl|oolong|matcha)|\btea\b|infusi[oó]n|tisana|matcha|rooibos|\bchai\b|kombucha|yerba mate|oolong|sencha|hojicha|earl grey|darjeeling|pu-?erh/i;
 const ALIAS={"Estados Unidos":["eeuu","ee.uu","estados unidos","united states","hawai","kona"],"Etiopía":["ethiopia"],"Kenia":["kenya"],"Brasil":["brazil"],"Ruanda":["rwanda"],"Tailandia":["thailand"],"Filipinas":["philippines"],"Papúa Nueva Guinea":["papua"],"Timor Oriental":["timor"],"China":["yunnan"],"Taiwán":["taiwan"]};
 function paisWeb(raw){const s=sa(raw);if(!s)return "";
@@ -150,7 +174,7 @@ function aObjetos(rows){
     const d={i,t:o.Tostador,c:o.Ciudad,n:o.Cafe,pr,g,o:paisWeb(o.Origen),p:o.Proceso||"",notas:o.Notas||"",sca:num(o.SCA),u:o.URL,img:o.Imagen,
       s:o.Disponible!=="0",act:o.Actualizado||"",mt:(o.Metodos||"").split("|").filter(Boolean),nf:(o.NotasFiltro||"").split("|").filter(Boolean),
       aff:o.EnlaceCompra||o.URL,af:o.Afiliado==="1",reg:o.Region||"",finca:o.Finca||"",prod:o.Productor||"",var:o.Varietal||"",alt:o.Altitud||""};
-    d.p250=g&&pr?pr*250/g:null;d.pk=d.p250!=null?d.p250:pr;
+    d.mono=o.Monodosis==="1"||MONO.test(d.n)||(g!=null&&g<60);d.p250=!d.mono&&g&&pr?pr*250/g:null;d.pk=d.mono?1e9:(d.p250!=null?d.p250:pr);
     d.hay=sa([d.t,d.c,d.n,d.o,d.p,d.notas,d.reg,d.finca,d.prod,d.var].join(" "));return d})
     .filter(d=>d.n&&d.pr>0&&!NOCAFE.test(d.n));
 }
@@ -164,16 +188,16 @@ function filtrar(){
     &&(!m||!d.mt.length||d.mt.includes(m))&&(sc<=80||(d.sca!=null&&d.sca>=sc))&&(pm>=pmMax||d.pk<=pm)
     &&(!$("stock").checked||d.s)&&[...sel].every(n=>d.nf.includes(n)));
   const k=$("orden").value;
-  r.sort(k==="pd"?(a,b)=>b.pk-a.pk:k==="sca"?(a,b)=>(b.sca||0)-(a.sca||0):k==="az"?(a,b)=>a.n.localeCompare(b.n,"es"):(a,b)=>a.pk-b.pk);
+  r.sort(k==="pd"?(a,b)=>(a.mono-b.mono)||(b.pk-a.pk):k==="sca"?(a,b)=>(b.sca||0)-(a.sca||0):k==="az"?(a,b)=>a.n.localeCompare(b.n,"es"):(a,b)=>(a.mono-b.mono)||(a.pk-b.pk));
   return r;
 }
 function tarjeta(d){
   const col=ARTE[(d.t||"").length%3],flag=ISO[d.o]?`<img class="flagimg" src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7/flags/4x3/${ISO[d.o]}.svg" alt="" width="22" height="16" loading="lazy" onerror="this.remove()">`:"";
   const arte=d.img?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
-  const tags=(!d.o&&/blend/i.test(d.n)?`<span class="tag t">Blend</span>`:"")+(d.p?`<span class="tag y">${esc(d.p)}</span>`:"")+(d.g?`<span class="tag">${d.g} g</span>`:"")+(d.sca!=null?`<span class="tag t">SCA ${d.sca}</span>`:"")+d.mt.slice(0,2).map(x=>`<span class="tag">${esc(x)}</span>`).join("");
+  const tags=(d.mono?`<span class="tag t">Monodosis</span>`:"")+(!d.o&&/blend/i.test(d.n)?`<span class="tag t">Blend</span>`:"")+(d.p?`<span class="tag y">${esc(d.p)}</span>`:"")+(d.g?`<span class="tag">${d.g} g</span>`:"")+(d.sca!=null?`<span class="tag t">SCA ${d.sca}</span>`:"")+d.mt.slice(0,2).map(x=>`<span class="tag">${esc(x)}</span>`).join("");
   const nt=d.notas||d.nf.join(" · ");
   const origen=d.o?`<div class="origen">${flag} ${esc(d.o)}${d.reg?`<small> · ${esc(d.reg)}</small>`:""}</div>`:"";
-  const sub=(d.p250&&d.g!==250?`<span class="sub">≈ ${eur(d.p250)} € / 250 g</span>`:"")+(fechaVieja(d.act)?`<span class="sub">Precio revisado el ${esc(d.act)}</span>`:"");
+  const sub=(d.mono?`<span class="sub">Dosis o muestra: no se compara por 250 g</span>`:"")+(d.p250&&d.g!==250?`<span class="sub">≈ ${eur(d.p250)} € / 250 g</span>`:"")+(fechaVieja(d.act)?`<span class="sub">Precio revisado el ${esc(d.act)}</span>`:"");
   return `<article class="coffee-card${d.s?"":" off"}"><div class="card-header-art" style="background:${col}">${arte}</div>
   <div class="card-body"><span class="roaster-name">${esc(d.t)}${d.c?" · "+esc(d.c):""}</span><h2 class="coffee-title">${esc(d.n)}</h2>${origen}
   <div class="tags-container">${tags}</div>
@@ -190,9 +214,10 @@ function render(){
 function nuevaBusqueda(){show=24;render()}
 function iniciar(){
   $("nTost").textContent="+"+new Set(D.map(d=>d.t)).size+" tostadores";
+  if(ENLACE_APOYO)$("apoyo").innerHTML=`<br><a class="btn-apoyo" href="${esc(ENLACE_APOYO)}" target="_blank" rel="noopener">Apoya el proyecto con un café</a>`;
   [...new Set(D.map(d=>d.o).filter(Boolean))].sort().forEach(o=>$("origen").add(new Option(o,o)));
   [...new Set(D.map(d=>d.c).filter(Boolean))].sort().forEach(c=>$("ciudad").add(new Option(c,c)));
-  const ps=D.map(d=>d.pk).filter(Boolean).sort((a,b)=>a-b),p95=ps[Math.floor(ps.length*.95)]||100;
+  const ps=D.filter(d=>!d.mono).map(d=>d.pk).filter(Boolean).sort((a,b)=>a-b),p95=ps[Math.floor(ps.length*.95)]||100;
   $("pmax").max=Math.min(150,Math.max(20,Math.ceil(p95)));$("pmax").value=$("pmax").max;
   if(!D.some(d=>d.sca!=null))$("scaf").style.display="none";
   render();
