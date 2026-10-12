@@ -130,7 +130,7 @@
       <span style="opacity: 0.85;">Precios y disponibilidad orientativos. Confírmalos en la web de cada tostador.</span>
       <div class="legal-links">
         <!-- Puedes enlazar a secciones de tu web o páginas independientes (ej. aviso-legal.html) -->
-        <a href="#aviso-legal" title="Edita con tu nombre o proyecto y datos de contacto">[Aviso Legal]</a>
+        <a href="#aviso-legal" title="CAFERADAR - Contacto:caferadar@outlook.es">[Aviso Legal]</a>
         <a href="#privacidad" title="Indica el tratamiento de datos y herramientas de análisis como Analytics">[Política de Privacidad]</a>
         <a href="#cookies" title="Información sobre el uso de cookies en la web">[Política de Cookies]</a>
       </div>
@@ -139,6 +139,18 @@
   </footer>
 
 <script>
+// Pega aquí la URL de Apps Script que copiaste en el paso anterior
+const TRACKING_URL = "https://script.google.com/macros/s/AKfycbySifqtxCsj6abkWamm8y3gLWwpfyciBvF-v92LPbMVQol4dJtkxbnUAn6hyGx1QfA1aQ/exec";
+
+function registrarClic(tostador, cafe, url) {
+  if (!TRACKING_URL || TRACKING_URL.includes("TU_URL")) return;
+  fetch(TRACKING_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tostador: tostador, cafe: cafe, url: url })
+  }).catch(err => console.log("Error de registro:", err));
+}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num=v=>{const x=parseFloat(String(v==null?"":v).replace(",","."));return isNaN(x)?null:x};
