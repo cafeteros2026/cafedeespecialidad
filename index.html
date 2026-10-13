@@ -81,6 +81,12 @@
     .legal-links{display:flex;gap:15px;flex-wrap:wrap}
     .legal-links a{color:var(--ink);text-decoration:underline;font-weight:700}
     .legal-links a:hover{color:var(--coral)}
+/* Estilos de la caja de donación Neo-Pop */
+    .coffee-support-box{max-width:1200px;margin:40px auto 0;background:var(--yellow);border:var(--border-thick);border-radius:16px;box-shadow:var(--shadow-pop);padding:25px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    .coffee-support-box p{font-family:'Bricolage Grotesque',sans-serif;font-size:1.25rem;font-weight:800;line-height:1.2;max-width:750px}
+    .btn-donate{background:var(--coral);color:#fff;border:var(--border-thick);padding:12px 24px;font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;font-weight:800;border-radius:12px;text-decoration:none;box-shadow:3px 3px 0 var(--ink);transition:all .15s;white-space:nowrap}
+    .btn-donate:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+    @media(max-width:768px){.coffee-support-box{flex-direction:column;text-align:center}.coffee-support-box p{max-width:100%}}
   </style>
 </head>
 <body>
@@ -122,10 +128,18 @@
   <main class="grid-container" id="grid"></main>
   <button class="more" id="more" style="display:none">Mostrar más cafés</button>
 
+<!-- CAJA DE DONACIÓN / INVITAR A UN CAFÉ -->
+  <div class="coffee-support-box">
+    <p>☕ ¿Has encontrado lo que buscabas? Si Café Radar te ha servido de ayuda, ¿me invitas a un café de especialidad?</p>
+    <a href="https://buymeacoffee.com/tu_usuario" class="btn-donate" target="_blank" rel="noopener">Invitar a un café ☕</a>
+  </div>
+
   <footer>
     <span id="upd"></span>
     <div class="footer-content">
       <span style="opacity: 0.85;">Precios y disponibilidad orientativos: confírmalos en la web de cada tostador. Café Radar no está afiliado a los tostadores ni cuenta con su respaldo; sus nombres, marcas e imágenes pertenecen a sus titulares.</span>
+
+
       <div class="legal-links">
         <a href="legal.html#aviso-legal">Aviso legal</a>
         <a href="legal.html#privacidad">Política de privacidad</a>
