@@ -125,27 +125,26 @@
   <footer>
     <span id="upd"></span>
     <div class="footer-content">
-      <span style="opacity: 0.85;">Precios y disponibilidad orientativos. Confírmalos en la web de cada tostador.</span>
+      <span style="opacity: 0.85;">Precios y disponibilidad orientativos: confírmalos en la web de cada tostador. Café Radar no está afiliado a los tostadores ni cuenta con su respaldo; sus nombres, marcas e imágenes pertenecen a sus titulares.</span>
       <div class="legal-links">
-        <a href="#aviso-legal" title="CAFERADAR - Contacto:caferadar@outlook.es">[Aviso Legal]</a>
-        <a href="#privacidad" title="Indica el tratamiento de datos y herramientas de análisis como Analytics">[Política de Privacidad]</a>
-        <a href="#cookies" title="Información sobre el uso de cookies en la web">[Política de Cookies]</a>
+        <a href="legal.html#aviso-legal">Aviso legal</a>
+        <a href="legal.html#privacidad">Política de privacidad</a>
+        <a href="legal.html#cookies">Política de cookies</a>
       </div>
     </div>
     <span id="apoyo"></span>
   </footer>
 
 <script>
-const TRACKING_URL = "https://script.google.com/macros/s/AKfycbySifqtxCsj6abkWamm8y3gLWwpfyciBvF-v92LPbMVQol4dJtkxbnUAn6hyGx1QfA1aQ/exec";
+const TRACKING_URL = "https://script.google.com/macros/s/AKfycbySifqtxCsj6abkWamm8y3gLWwpfyciBvF-v92LPbMVQol4dJtkxbnUAn6hyGx1QfA1aQ/exec";   // Google Apps Script que anota tostador, café y enlace (sin datos del visitante)
 
-function registrarClic(tostador, cafe, url) {
-  if (!TRACKING_URL || TRACKING_URL.includes("https://script.google.com/macros/s/AKfycbySifqtxCsj6abkWamm8y3gLWwpfyciBvF-v92LPbMVQol4dJtkxbnUAn6hyGx1QfA1aQ/exec")) return;
+function registrarClic(tostador, cafe, destino) {
+  if (!TRACKING_URL || TRACKING_URL.startsWith("PEGA_")) return;
   fetch(TRACKING_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tostador: tostador, cafe: cafe, url: url })
-  }).catch(err => console.log("Error de registro:", err));
+    method: "POST", mode: "no-cors", credentials: "omit", keepalive: true,       // sin cookies; sigue enviándose aunque se abra la otra pestaña
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ tostador: tostador, cafe: cafe, url: destino })
+  }).catch(() => {});
 }
 
 const $=id=>document.getElementById(id);
@@ -154,9 +153,10 @@ const num=v=>{const x=parseFloat(String(v==null?"":v).replace(",","."));return i
 const sa=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 const eur=v=>(+v||0).toFixed(2).replace(".",",");
 const ISO={"Etiopía":"et","Kenia":"ke","Colombia":"co","Brasil":"br","Guatemala":"gt","Costa Rica":"cr","Perú":"pe","Honduras":"hn","El Salvador":"sv","Panamá":"pa","Ruanda":"rw","Burundi":"bi","Uganda":"ug","Venezuela":"ve","Nicaragua":"ni","México":"mx","Indonesia":"id","Tanzania":"tz","Bolivia":"bo","Ecuador":"ec","Yemen":"ye","India":"in","Papúa Nueva Guinea":"pg","Tailandia":"th","Jamaica":"jm","Vietnam":"vn","Laos":"la","Malawi":"mw","Zambia":"zm","República Dominicana":"do","Estados Unidos":"us","Congo":"cd","Filipinas":"ph","Timor Oriental":"tl","Myanmar":"mm","China":"cn","Taiwán":"tw","Nepal":"np","Camerún":"cm","Costa de Marfil":"ci","Mozambique":"mz","Madagascar":"mg","Haití":"ht","Paraguay":"py","Santo Tomé y Príncipe":"st"};
+const MOSTRAR_IMAGENES=true;   // pon false para ocultar las fotos hasta tener permiso de cada tostador
 const ENLACE_APOYO="";
 const MONO=/\b(?:dip|drip|bags?|bolsitas?|sobres?|sachets?|immersion|inmersi[oó]n|monodosis|unidosis|muestras?|samples?|stick)\b/i;
-const NOCAFE=/\bt[eé]s?\b|\bte (?:verde|negro|rojo|blanco|azul|chai|earl|oolong|matcha)|\btea\b|infusi[oó]n|tisana|matcha|rooibos|\bchai\b|kombucha|yerba mate|oolong|sencha|hojicha|earl grey|darjeeling|pu-?erh/i;
+const NOCAFE=/\bswitch\b|puertos|rj-?45|tp-?link|vajilla|\bconj\b|conjunto|\bsacos?\b|yute|arpillera|filtros? de caf[eé]|llavero|membres[ií]a|bid[oó]n|detergente|bayeta|menaje|\bt[eé]s?\b|\bte (?:verde|negro|rojo|blanco|azul|chai|earl|oolong|matcha)|\btea\b|infusi[oó]n|tisana|matcha|rooibos|\bchai\b|kombucha|yerba mate|oolong|sencha|hojicha|earl grey|darjeeling|pu-?erh/i;
 const ALIAS={"Estados Unidos":["eeuu","ee.uu","estados unidos","united states","hawai","kona"],"Etiopía":["ethiopia"],"Kenia":["kenya"],"Brasil":["brazil"],"Ruanda":["rwanda"],"Tailandia":["thailand"],"Filipinas":["philippines"],"Papúa Nueva Guinea":["papua"],"Timor Oriental":["timor"],"China":["yunnan"],"Taiwán":["taiwan"]};
 
 function paisWeb(raw){const s=sa(raw);if(!s)return "";
@@ -171,7 +171,7 @@ function parseCSV(t){
   t=t.replace(/^\uFEFF/,"");const rows=[];let row=[],cur="",q=false;
   for(let i=0;i<t.length;i++){const c=t[i];
     if(q){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
-    else if(c==='"')q=true;
+    else if(c==='"'&&cur==="")q=true;
     else if(c===";"){row.push(cur);cur=""}
     else if(c==="\n"){row.push(cur);rows.push(row);row=[];cur=""}
     else if(c!=="\r")cur+=c}
@@ -207,23 +207,18 @@ function filtrar(){
 
 function tarjeta(d){
   const col=ARTE[(d.t||"").length%3],flag=ISO[d.o]?`<img class="flagimg" src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7/flags/4x3/${ISO[d.o]}.svg" alt="" width="22" height="16" loading="lazy" onerror="this.remove()">`:"";
-  const arte=d.img?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
+  const arte=(MOSTRAR_IMAGENES&&d.img)?`<img src="${esc(d.img)}" alt="${esc(d.n)}" loading="lazy" onerror="this.remove()">`:`<div class="art-shape-1"></div><div class="art-shape-2"></div>`;
   const tags=(d.mono?`<span class="tag t">Monodosis</span>`:"")+(!d.o&&/blend/i.test(d.n)?`<span class="tag t">Blend</span>`:"")+(d.p?`<span class="tag y">${esc(d.p)}</span>`:"")+(d.g?`<span class="tag">${d.g} g</span>`:"")+(d.sca!=null?`<span class="tag t">SCA ${d.sca}</span>`:"")+d.mt.slice(0,2).map(x=>`<span class="tag">${esc(x)}</span>`).join("");
   const nt=d.notas||d.nf.join(" · ");
   const origen=d.o?`<div class="origen">${flag} ${esc(d.o)}${d.reg?`<small> · ${esc(d.reg)}</small>`:""}</div>`:"";
   const sub=(d.mono?`<span class="sub">Dosis o muestra: no se compara por 250 g</span>`:"")+(d.p250&&d.g!==250?`<span class="sub">≈ ${eur(d.p250)} € / 250 g</span>`:"")+(fechaVieja(d.act)?`<span class="sub">Precio revisado el ${esc(d.act)}</span>`:"");
-  
-  // Limpiamos comillas simples y dobles para evitar romper la llamada al JavaScript
-  const tLimpio = esc(d.t).replace(/'/g, "\\'");
-  const nLimpio = esc(d.n).replace(/'/g, "\\'");
-  const affLimpio = esc(d.aff).replace(/'/g, "\\'");
 
   return `<article class="coffee-card${d.s?"":" off"}"><div class="card-header-art" style="background:${col}">${arte}</div>
   <div class="card-body"><span class="roaster-name">${esc(d.t)}${d.c?" · "+esc(d.c):""}</span><h2 class="coffee-title">${esc(d.n)}</h2>${origen}
   <div class="tags-container">${tags}</div>
   <div class="notes-box${nt?"":" vacio"}">${nt?esc(nt.length>150?nt.slice(0,147)+"…":nt):"Sin notas de cata indicadas"}</div>
   <div class="card-footer"><span class="price">${eur(d.pr)}€${d.g?`<small>/ ${d.g} g</small>`:""}${sub}</span>
-  <a href="${esc(d.aff)}" class="btn-buy${d.s?"":" agotado"}" target="_blank" rel="${d.af?"sponsored ":""}noopener" onclick="registrarClic('${tLimpio}', '${nLimpio}', '${affLimpio}')">${d.s?"Ver Café":"Agotado"}</a></div></div></article>`;
+  <a href="${esc(d.aff)}" class="btn-buy${d.s?"":" agotado"}" target="_blank" rel="${d.af?"sponsored ":""}noopener" data-t="${esc(d.t)}" data-n="${esc(d.n)}">${d.s?"Ver Café":"Agotado"}</a></div></div></article>`;
 }
 
 function render(){
@@ -254,6 +249,7 @@ tg.addEventListener("click",()=>{const a=$("notas").classList.toggle("all");tg.t
 $("btn").addEventListener("click",nuevaBusqueda);
 $("q").addEventListener("keydown",e=>{if(e.key==="Enter")nuevaBusqueda()});
 $("more").addEventListener("click",()=>{show+=24;render()});
+$("grid").addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a.btn-buy");if(a&&!a.classList.contains("agotado"))registrarClic(a.dataset.t,a.dataset.n,a.href)});
 $("reset").addEventListener("click",()=>{$("q").value="";["origen","ciudad","metodo"].forEach(i=>$(i).value="");$("scav").value=80;$("pmax").value=$("pmax").max;$("stock").checked=false;
   sel.clear();document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));nuevaBusqueda()});
 if(window.innerWidth<700)$("panel").open=false;

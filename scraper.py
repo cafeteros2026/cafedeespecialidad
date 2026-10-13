@@ -47,8 +47,6 @@ METODOS = {"Espresso":["espresso","expreso"],"Filtro":["filtro","v60","chemex","
  "Moka":["moka","italiana"],"Prensa francesa":["prensa francesa","french press","émbolo","embolo"],"AeroPress":["aeropress"],
  "Cold brew":["cold brew","cold-brew","coldbrew","infusión en frío"],
  "Superautomática":["superautomática","superautomatica","superautomáticas","bean to cup","máquinas automáticas"]}
-NO = ["taza","merch","camiseta","molinillo","cafetera","papel","v60","aeropress","gift","regalo","tote","curso",
-      "suscrip","pack","prensa","tetera","báscula","bascula","jarra","cápsula","capsula","sudadera"]
 
 def antibot(r):
     h = {k.lower(): str(v).lower() for k, v in r.headers.items()}
@@ -94,10 +92,18 @@ def num(v):
     try: return float(str(v).replace(",", "."))
     except Exception: return None
 
-def no_cafe(s): return any(x in s.lower() for x in NO)
-NEG = re.compile(r"\b(?:switch|router|cable|ethernet|tp-link|filtro|filters?|ufo|cucharillas|llavero|membresía|edulcorante|cup|mate|té|detergente|bayeta|%|vajilla|sacos?|yute|arpillera|molinill|grinder|m[aá]quina|cafeter|accesorio|merch|camiseta|gorra|sudadera|tote|regalo|gift|tarjeta|curso|formaci|taller|suscrip|pack|kit\b|b[aá]scula|balanza|jarra|tetera|hervidor|limpi|descalcific|tamper|portafiltro|dripper|chemex|aeropress|c[aá]psula|taza(?! de excelencia)|vaso|termo|botella|bote\b|prueba|test\b|comprobaci|tools|equipamiento|herramienta|libro|e-?book|delantal|pegatina|p[oó]ster|mug\b|filtros? de papel|papel|nuez|nueces|pipas|pasas|cacahuete|almendra|avellana|pistacho|anacardo|d[aá]til|higo|orejones|frutos secos|snack|galleta|turr[oó]n|aceite|cerveza|infusi|tisana|rooibos|matcha|chai|t[eé] (?:verde|negro|rojo|blanco)|vino|licor|tableta|bomb[oó]n|bizcocho|leche|condensad|dulce de|dulces\b|crema de|sirope|jarabe|helado|cookie|soluble|salsa|mermelada|chocolate|cacao|caf[eé] verde|green coffee|sin tostar|bono|entrada|experiencia|hario|kalita|fellow|baratza|comandante|timemore|bialetti|marzocco|cafec|origami|kinto|stanley|espro|acaia|moccamaster|sage\b|orea|subminimal|descatalogado|env[ií]os?|tarifa|plan renove|combo|bundle|box\b|sourdough|^\s*v60\s*$|^\s*molino\b|tostadora|prensa\b|cuchara|agitad|exfoliante|jab[oó]n|hojicha|sencha|genmaicha|oolong|pu-?erh|yerba|^\s*(?:az[uú]car|panela)\b|mascobado|review|opini[oó]n|cecotec|delonghi|de'longhi|krups|philips|nespresso|dolce gusto|recipiente|cristal|tapa\b|vidrio|subscription|b2b|wholesale|mayorista|kruve|trinity|champi|setas?\b|bocadillo|bocata|tostada\b|croissant|brunch|desayuno|men[uú]\b|carta\b|tarta|pastel|pan\b|sandwich|ensalada|tortilla|huevos?|zumo|smoothie|batido|c[oó]ctel|cocktail|whisky|vermut|hamburguesa|pizza|queso|jam[oó]n|embutido|aceitunas|tapas?\b|raci[oó]n|refresco|cortado|capuchino|cappuccino|americano\b|carajillo|macchiato|con leche|workshop|masterclass|clases? de|evento|training|certificaci|^\s*cata\b|cata de|cata guiada)", re.I)
+def no_cafe(s): return bool(NEG.search(s))      # la lista de palabras excluidas es NEG (y EXCLUIR_PALABRAS, más abajo)
+NEG = re.compile(r"\b(?:molinill|grinder|m[aá]quina|cafeter|accesorio|merch|camiseta|gorra|sudadera|tote|regalo|gift|tarjeta|curso|formaci|taller|suscrip|pack|kit\b|b[aá]scula|balanza|jarra|tetera|hervidor|limpi|descalcific|tamper|portafiltro|dripper|chemex|aeropress|c[aá]psula|taza(?! de excelencia)|vaso|termo|botella|bote\b|prueba|test\b|comprobaci|tools|equipamiento|herramienta|libro|e-?book|delantal|pegatina|p[oó]ster|mug\b|filtros? de papel|papel|nuez|nueces|pipas|pasas|cacahuete|almendra|avellana|pistacho|anacardo|d[aá]til|higo|orejones|frutos secos|snack|galleta|turr[oó]n|aceite|cerveza|infusi|tisana|rooibos|matcha|chai|t[eé] (?:verde|negro|rojo|blanco)|vino|licor|tableta|bomb[oó]n|bizcocho|leche|condensad|dulce de|dulces\b|crema de|sirope|jarabe|helado|cookie|soluble|salsa|mermelada|chocolate|cacao|caf[eé] verde|green coffee|sin tostar|bono|entrada|experiencia|hario|kalita|fellow|baratza|comandante|timemore|bialetti|marzocco|cafec|origami|kinto|stanley|espro|acaia|moccamaster|sage\b|orea|subminimal|descatalogado|env[ií]os?|tarifa|plan renove|combo|bundle|box\b|sourdough|^\s*v60\s*$|^\s*molino\b|tostadora|prensa\b|cuchara|agitad|exfoliante|jab[oó]n|hojicha|sencha|genmaicha|oolong|pu-?erh|yerba|^\s*(?:az[uú]car|panela)\b|mascobado|review|opini[oó]n|cecotec|delonghi|de'longhi|krups|philips|nespresso|dolce gusto|recipiente|cristal|tapa\b|vidrio|subscription|b2b|wholesale|mayorista|kruve|trinity|champi|setas?\b|bocadillo|bocata|tostada\b|croissant|brunch|desayuno|men[uú]\b|carta\b|tarta|pastel|pan\b|sandwich|ensalada|tortilla|huevos?|zumo|smoothie|batido|c[oó]ctel|cocktail|whisky|vermut|hamburguesa|pizza|queso|jam[oó]n|embutido|aceitunas|tapas?\b|raci[oó]n|refresco|cortado|capuchino|cappuccino|americano\b|carajillo|macchiato|con leche|workshop|masterclass|clases? de|evento|training|certificaci|^\s*cata\b|cata de|cata guiada|t[é]s?\b|te (?:verde|negro|rojo|blanco|azul|chai|earl|oolong|matcha|de |en hebras)|tea\b|earl grey|darjeeling|assam|ceil[aá]n|bancha|gyokuro|lapsang|kombucha|\bmate\b|manzanilla|poleo|tila\b|hierbaluisa)", re.I)
+# Añade aquí cualquier palabra que NO deba aparecer en el nombre de un café (se busca como palabra o inicio de palabra).
+EXCLUIR_PALABRAS = ["membresía", "membresia", "switch", "llavero", "saco", "sacos", "yute", "arpillera", "edulcorante", "bidón", "bidon",
+    "detergente", "cepillo", "limpieza", "bayeta", "original beans", "lápiz", "lapiz", "soporte", "acero", "interactiv", "estuche", "dynamite",
+    "digestiv", "puertos", "rj-45", "rj45", "tp-link", "tplink", "router", "cable", "usb", "hdmi", "ordenador", "impresora", "bombilla", "pila ",
+    "bater", "cargador", "enchufe", "regleta", "auricular", "altavoz", "monitor", "teclado", "vajilla", "menaje", "cubierto", "plato", "cuenco",
+    "cazo", "olla", "sartén", "sarten", "bandeja", "servilleta", "mantel", "mochila", "calcet", "bufanda", "paraguas", "libreta", "bolígrafo",
+    "boligrafo", "calendario", "conj", "conjunto", "juego de", "set de", "colador", "cucharilla", "azucarero", "lechera", "cafetería", "cafeteria"]
+NEG = re.compile(NEG.pattern[:-1] + r"|filtros? de caf[eé]|filtro (?:individual|reutilizable|permanente|met[aá]lico|de tela|ufo)|" + "|".join(rf"\b{re.escape(w)}" for w in EXCLUIR_PALABRAS) + ")", re.I)
 NEG_URL = re.compile(r"\b(?:molinill|m[aá]quina|cafeter|accesorio|camiseta|gorra|tote|regalo|gift|curso|taller|suscrip|pack|capsula|c[aá]psula|taza(?!-de-excelencia)|termo|dripper|aeropress|chemex|filtros?-de-papel|molino|tostadora)", re.I)
-NEG_CAT = re.compile(r"\b(?:accesorios?|merch|cafeteras?|molinillos?|m[aá]quinas?|cursos?|talleres?|tazas?|regalos?|packs?|suscripci|c[aá]psulas?|infusi[oó]n(?:es)?|tisanas?|t[eé]s?\b|snacks?|frutos secos|libros?|ropa|equipamiento|herramientas|bebidas|dulces|reposter)", re.I)
+NEG_CAT = re.compile(r"\b(?:accesorios?|merch|cafeteras?|molinillos?|m[aá]quinas?|cursos?|talleres?|tazas?|regalos?|vajilla|menaje|hogar|electr[oó]nica|inform[aá]tica|textil|complementos|bazar|ferreter[ií]a|limpieza|packs?|suscripci|c[aá]psulas?|infusi[oó]n(?:es)?|tisanas?|t[eé]s?\b|snacks?|frutos secos|libros?|ropa|equipamiento|herramientas|bebidas|dulces|reposter)", re.I)
 VARIEDAD = re.compile(r"geisha|gesha|bourbon|borb[oó]n|caturra|catua[ií]|typica|pacamara|sidra|sl-?28|sl-?34|castillo|heirloom|ruiru|batian|catimor|wush|laurina|pacas|villa sarchi|obata|maragogipe|mundo novo|peaberry|supremo|excelso|honey|lavado|washed|anaer|\blote\b|\bAA\b|\bAB\b", re.I)
 POS = re.compile(r"caf[eé]\b|coffee|grano|espresso|origen|tueste|blend|especialidad|single|microlote|descafe|decaf", re.I)
 
@@ -117,6 +123,8 @@ def es_cafe(nombre, cab, desc, tiene_peso, precio, confiado=False, ev_extra=Fals
     if pais(nombre, "") or VARIEDAD.search(nombre): return True      # "Colombia Huila", "Kiringa AA", "Geisha"
     ev = CAFE_TXT.search(desc) or (pais(nombre, desc) and re.search(r"notas|tueste|cata", desc, re.I))
     if ev and (tiene_peso or precio < 40): return True
+    raro = re.search(r"\d{3,}|[/\\]|\b[a-z]{1,3}\d{2,}[a-z]*\b|\b\d+\s?(?:w|v|mm|cm|ml|cl|uds?|pzs?)\b", nombre, re.I) or len(nombre.split()) > 7
+    if raro and not tiene_peso: return no("nombre con aspecto de artículo (modelo, medidas)")
     LOC.dud = True
     return True
 
@@ -160,7 +168,7 @@ def afiliado(u, t):
     if t["tpl"]: return t["tpl"].replace("{url}", up.quote(u, safe=""))   # plantilla de red de afiliación
     q = up.parse_qs(up.urlparse(u).query)
     if t["code"]: q[t["param"]] = [t["code"]]
-    q["utm_source"] = ["granos"]
+    q["utm_source"] = ["caferadar"]
     return up.urlunparse(up.urlparse(u)._replace(query=up.urlencode(q, doseq=True)))
 
 LAB = {"origen": "origen", "país": "origen", "pais": "origen", "origin": "origen", "región": "region", "region": "region",
@@ -221,7 +229,7 @@ def gramos_texto(txt):
     m = re.search(r"(?:formato|peso|contenido|cantidad|neto)\D{0,15}(\d+(?:[.,]\d+)?\s?(?:kg|kilos?|gramos|gr|g)\b)", txt or "", re.I)
     return gramos(m.group(1)) if m else None
 
-SOLO = re.compile(r"\b(?:bags?|bolsitas?|sobres?|sachets?|dip|drip|immersion|inmersi[oó]n|monodosis|stick)\b", re.I)
+SOLO = re.compile(r"\b(?:bags?|bolsitas?|sobres?|sachets?|dip|drip|immersion|inmersi[oó]n|monodosis|unidosis|muestras?|samples?|stick)\b", re.I)
 STD = {100, 125, 150, 200, 227, 250, 340, 350, 400, 454, 500, 1000}
 
 def gramos_estandar(txt):
@@ -235,13 +243,14 @@ def ficha(t, n, u, img, txt, precio, stock, g=None, gsrc="", det=None):
     det = det or {}
     pr = round(precio, 2)
     if g and SOLO.search(n) and gsrc not in ("título", "variante", "descripción", "manual"): g = None   # monodosis: el peso de envío no vale
+    mono = bool(SOLO.search(n)) or bool(g and g < 60)       # dip, inmersión, muestras, dosis unitarias
     tl = txt.lower()
     return {"n": norm(n), "r": t["nombre"], "c": t["ciudad"], "u": u, "aff_url": afiliado(u, t), "img": img or "",
         "mt": (lambda m: [] if len(m) >= 4 else m)(hallar(METODOS, txt)),
         "o": (pais(det.get("origen", ""), "") or pais(n, txt)), "p": limpiar_proceso(det.get("proceso")) or (hallar(PROC, txt) or [""])[0],
         "nt": hallar(NOTAS, det["notas"]) if det.get("notas") else hallar(NOTAS, txt), "notas": det.get("notas", ""),
         "reg": det.get("region", ""), "finca": det.get("finca", ""), "prod": det.get("productor", ""), "var": det.get("varietal", ""), "alt": det.get("altitud", ""),
-        "act": date.today().isoformat(), "logo": t.get("logo", ""), "pr": pr, "g": g, "gsrc": gsrc if g else "", "p250": round(precio * 250 / g, 2) if g else None,
+        "act": date.today().isoformat(), "logo": t.get("logo", ""), "pr": pr, "g": g, "gsrc": gsrc if g else "", "p250": round(precio * 250 / g, 2) if g and not mono else None, "mono": mono,
         "af": bool(t["aff"] or t["tpl"] or t["code"]), "s": bool(stock),
         "sca": sca_det(det, txt), "rt": None, "sh": num(t["sh"]), "mn": num(t["mn"]) or 0, "_d": getattr(LOC, "dud", False)}
 
@@ -759,7 +768,7 @@ def procesar(t):
 
 COLS_CSV = ["Tostador", "Ciudad", "Cafe", "Precio", "Gramos", "Origen", "Proceso", "Notas", "SCA", "URL", "Imagen", "Disponible",
             "Actualizado", "Region", "Finca", "Productor", "Varietal", "Altitud", "Metodos", "NotasFiltro", "EnlaceCompra", "Afiliado",
-            "Logo", "EnvioGratisDesde", "PedidoMinimo", "FuenteGramos"]
+            "Logo", "EnvioGratisDesde", "PedidoMinimo", "FuenteGramos", "Monodosis"]
 
 def fecha_es(iso):
     try: return date.fromisoformat(iso).strftime("%d/%m/%Y")
@@ -770,7 +779,7 @@ def a_fila(c):
             c.get("notas") or ", ".join(c.get("nt") or []), c.get("sca") or "", c.get("u"), c.get("img") or "", 1 if c.get("s") else 0,
             fecha_es(c.get("act")), c.get("reg") or "", c.get("finca") or "", c.get("prod") or "", c.get("var") or "", c.get("alt") or "",
             "|".join(c.get("mt") or []), "|".join(c.get("nt") or []), c.get("aff_url") or c.get("u"), 1 if c.get("af") else 0,
-            c.get("logo") or "", c.get("sh") if c.get("sh") is not None else "", c.get("mn") or "", c.get("gsrc") or ""]
+            c.get("logo") or "", c.get("sh") if c.get("sh") is not None else "", c.get("mn") or "", c.get("gsrc") or "", 1 if c.get("mono") else 0]
 
 def escribir_cafes_csv(total):
     """Base de datos de la web: mismas columnas que cafes_manuales_1000cups.csv + columnas extra al final."""
@@ -879,7 +888,7 @@ def aplicar_correcciones(total):
         if num(v("Precio")): c["pr"] = round(num(v("Precio")), 2)
         if num(v("Gramos")): c["g"], c["gsrc"] = int(num(v("Gramos"))), "manual"
         if v("Disponible"): c["s"] = v("Disponible").lower() not in ("0", "no")
-        c["p250"] = round(c["pr"] * 250 / c["g"], 2) if c.get("g") else None
+        c["p250"] = round(c["pr"] * 250 / c["g"], 2) if c.get("g") and not c.get("mono") else None
         c["corr"] = True; n_ok += 1
     print(f"[correcciones] {n_ok} aplicadas, {len(ocultos)} cafés ocultos")
     return [c for c in total if id(c) not in ocultos]
