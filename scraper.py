@@ -100,7 +100,7 @@ EXCLUIR_PALABRAS = ["membresía", "membresia", "switch", "llavero", "saco", "sac
     "digestiv", "puertos", "rj-45", "rj45", "tp-link", "tplink", "router", "cable", "usb", "hdmi", "ordenador", "impresora", "bombilla", "pila ",
     "bater", "cargador", "enchufe", "regleta", "auricular", "altavoz", "monitor", "teclado", "vajilla", "menaje", "cubierto", "plato", "cuenco",
     "cazo", "olla", "sartén", "sarten", "bandeja", "servilleta", "mantel", "mochila", "calcet", "bufanda", "paraguas", "libreta", "bolígrafo",
-    "boligrafo", "calendario", "conj", "conjunto", "juego de", "set de", "colador", "cucharilla", "azucarero", "lechera", "cafetería", "cafeteria"]
+    "boligrafo", "calendario", "conj", "conjunto", "juego de", "set de", "colador", "cucharilla", "azucarero", "lechera", "cafetería", "cafeteria","hostelería","copa","filtro"]
 NEG = re.compile(NEG.pattern[:-1] + r"|filtros? de caf[eé]|filtro (?:individual|reutilizable|permanente|met[aá]lico|de tela|ufo)|" + "|".join(rf"\b{re.escape(w)}" for w in EXCLUIR_PALABRAS) + ")", re.I)
 NEG_URL = re.compile(r"\b(?:molinill|m[aá]quina|cafeter|accesorio|camiseta|gorra|tote|regalo|gift|curso|taller|suscrip|pack|capsula|c[aá]psula|taza(?!-de-excelencia)|termo|dripper|aeropress|chemex|filtros?-de-papel|molino|tostadora)", re.I)
 NEG_CAT = re.compile(r"\b(?:accesorios?|merch|cafeteras?|molinillos?|m[aá]quinas?|cursos?|talleres?|tazas?|regalos?|vajilla|menaje|hogar|electr[oó]nica|inform[aá]tica|textil|complementos|bazar|ferreter[ií]a|limpieza|packs?|suscripci|c[aá]psulas?|infusi[oó]n(?:es)?|tisanas?|t[eé]s?\b|snacks?|frutos secos|libros?|ropa|equipamiento|herramientas|bebidas|dulces|reposter)", re.I)
