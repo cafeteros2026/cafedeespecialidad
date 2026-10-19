@@ -35,7 +35,7 @@ NOTAS = {"Frutos rojos":["frutos rojos","frutas rojas","fresa","frambuesa","ará
  "Cítrico":["cítric","naranja","limón","lime","mandarina","bergamota","pomelo","citrus","orange","lemon","grapefruit","tangerine"],
  "Fruta tropical":["tropical","mango","piña","maracuyá","maracuya","papaya","lichi","guayaba","pineapple","passion fruit"],
  "Fruta de hueso":["melocotón","albaricoque","ciruela","nectarina","peach","apricot","plum"],
- "Manzana y pera":["manzana","pera","apple","pear"],"Uva y vino":["uva","vino","pasas","wine","grape","raisin"],
+ "Manzana y pera":["manzana","pera","apple","pear"],"Uva y vino":["vino","pasas","wine","grape","raisin"],
  "Floral":["floral","jazmín","flores","azahar","lavanda","jasmine","flower"],
  "Té":["té negro","té verde","black tea","earl grey","chai"],"Chocolate":["chocolate","brownie"],"Cacao":["cacao","cocoa","nibs"],
  "Caramelo":["caramelo","toffee","azúcar moreno","caramel"],"Miel":["miel","honey"],"Panela":["panela","melaza","molasses"],
@@ -99,7 +99,7 @@ EXCLUIR_PALABRAS = ["membresía", "membresia", "switch", "llavero", "saco", "sac
     "detergente", "cepillo", "limpieza", "bayeta", "original beans", "lápiz", "lapiz", "soporte", "acero", "interactiv", "estuche", "dynamite",
     "digestiv", "puertos", "rj-45", "rj45", "tp-link", "tplink", "router", "cable", "usb", "hdmi", "ordenador", "impresora", "bombilla", "pila ",
     "bater", "cargador", "enchufe", "regleta", "auricular", "altavoz", "monitor", "teclado", "vajilla", "menaje", "cubierto", "plato", "cuenco",
-    "cazo", "olla", "sartén", "sarten", "bandeja", "servilleta", "mantel", "mochila", "calcet", "bufanda", "paraguas", "libreta", "bolígrafo",
+    "cazo", "olla", "sartén", "sarten", "bandeja", "servilleta", "mantel", "mochila", "calcet", "bufanda", "paraguas", "libreta", "bolígrafo","cold",
     "boligrafo", "calendario", "conj", "conjunto", "juego de", "set de", "colador", "cucharilla", "azucarero", "lechera", "cafetería", "cafeteria","hostelería","copa","filtro","cup","ice","mezcla","%","cafetto","limpiador","healthy","enérgico","enérgica","energizante","cáscara"]
 NEG = re.compile(NEG.pattern[:-1] + r"|filtros? de caf[eé]|filtro (?:individual|reutilizable|permanente|met[aá]lico|de tela|ufo)|" + "|".join(rf"\b{re.escape(w)}" for w in EXCLUIR_PALABRAS) + ")", re.I)
 NEG_URL = re.compile(r"\b(?:molinill|m[aá]quina|cafeter|accesorio|camiseta|gorra|tote|regalo|gift|curso|taller|suscrip|pack|capsula|c[aá]psula|taza(?!-de-excelencia)|termo|dripper|aeropress|chemex|filtros?-de-papel|molino|tostadora)", re.I)
