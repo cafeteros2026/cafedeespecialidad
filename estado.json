@@ -1,26 +1,20 @@
 {
- "fecha": "2026-10-26T08:48:52",
- "total_cafes": 2658,
+ "fecha": "2026-10-27T08:57:24",
+ "total_cafes": 2783,
  "total_tostadores": 145,
  "sin_datos": [
-  "Astro Café Roasters",
   "BO&GO Specialty Coffee",
   "Café Angélica",
   "Cafés Moreno",
   "Cafés Plaza del Castillo",
   "Cafés Puerto Rico",
-  "Coffee Hackers",
   "El Tostado",
   "Geisha Coffee Roasters",
   "Guayota Coffee Roasters",
   "Jaleo Coffee Roasters",
-  "Kaitxo",
   "Lezzato Café",
   "Meza Coffee",
   "Nenit Coffee Roasters",
-  "Nica Café",
-  "Nobil Coffee Roasters",
-  "Sip and Wonder",
-  "Slow Coffee Tenerife"
+  "Sip and Wonder"
  ]
 }
